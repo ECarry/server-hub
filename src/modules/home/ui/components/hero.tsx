@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/trpc/client";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 
 export const Hero = () => {
   const { data: brands } = trpc.brands.getMany.useQuery();

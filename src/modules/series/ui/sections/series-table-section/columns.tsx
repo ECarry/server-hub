@@ -2,7 +2,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Actions } from "./actions";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 import { SeriesGetManyOutput } from "@/modules/series/types";
 
 export const columns: ColumnDef<SeriesGetManyOutput[number]>[] = [

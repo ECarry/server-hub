@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { productsInsertSchema } from "@/db/schema";
 import { Textarea } from "@/components/ui/textarea";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 import { IconDatabase, IconNetwork, IconServer } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 

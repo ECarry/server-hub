@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 import { trpc } from "@/trpc/client";
 import { format, formatDistanceToNow } from "date-fns";
 import { Suspense, useState } from "react";
@@ -41,8 +41,8 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { ImageDropzone } from "@/modules/filesUpload/ui/components/image-dropzone";
-import { cloudflareR2 } from "@/modules/filesUpload/lib/cloudflare-r2";
+import { ImageDropzone } from "@/modules/file-uploader/ui/components/image-dropzone";
+import { cloudflareR2 } from "@/modules/file-uploader/lib/cloudflare-r2";
 import { ProductImagesCarousel } from "@/modules/product-images/ui/components/product-images-carousel";
 import { DocumentUploaderModal } from "@/modules/documentation/ui/components/document-uploader-modal";
 import { FilesAccordion } from "@/components/files-accordion";

@@ -3,7 +3,7 @@ import { brandsSelectSchema } from "@/db/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Actions } from "./actions";
 

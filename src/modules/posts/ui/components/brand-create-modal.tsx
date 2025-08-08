@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { brandsInsertSchema } from "@/db/schema";
 import { Textarea } from "@/components/ui/textarea";
-import { ImageUploaderButton } from "@/modules/filesUpload/ui/components/image-uploader-button";
+import { ImageUploaderButton } from "@/modules/file-uploader/ui/components/image-uploader-button";
 
 interface Props {
   open: boolean;

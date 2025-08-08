@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 
 import { Product } from "@/modules/home/types";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 import { trpc } from "@/trpc/client";
 
 export function ProductCard({ product }: { product: Product }) {

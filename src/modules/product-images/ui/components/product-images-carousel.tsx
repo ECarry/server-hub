@@ -8,7 +8,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { ProductImagesGetManyOutput } from "../../types";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 import { X } from "lucide-react";
 import { trpc } from "@/trpc/client";
 import { toast } from "sonner";

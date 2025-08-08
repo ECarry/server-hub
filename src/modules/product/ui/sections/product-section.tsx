@@ -3,7 +3,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 import { useSave } from "@/modules/save-product/hooks/use-save";
 import { SaveButton } from "@/modules/save-product/ui/components/save-button";
 import { trpc } from "@/trpc/client";

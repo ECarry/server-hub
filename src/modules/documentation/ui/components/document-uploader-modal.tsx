@@ -10,7 +10,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { UploaderButton } from "@/modules/filesUpload/ui/components/uploader-button";
+import { UploaderButton } from "@/modules/file-uploader/ui/components/uploader-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";

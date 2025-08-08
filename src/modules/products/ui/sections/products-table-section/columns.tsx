@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getFileUrl } from "@/modules/filesUpload/lib/utils";
+import { getFileUrl } from "@/modules/file-uploader/lib/utils";
 import { ProductsGetManyOutput } from "@/modules/products/types";
 import {
   IconDatabase,
