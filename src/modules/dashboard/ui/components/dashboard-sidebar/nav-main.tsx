@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import type { Route } from "next";
 
 export function NavMain({
   items,
@@ -45,7 +46,7 @@ export function NavMain({
                 isActive={pathname.startsWith(item.url)}
                 asChild
               >
-                <Link href={item.url}>
+                <Link href={item.url as Route}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                 </Link>
