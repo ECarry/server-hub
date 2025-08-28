@@ -6,8 +6,6 @@ import {
   canPerformAction,
   getReadableVisibilities,
   type UserRole,
-  type ActionType,
-  type ResourceVisibility,
 } from "@/lib/permissions";
 
 export const createTRPCContext = cache(async () => {
@@ -63,14 +61,17 @@ export const authenticatedProcedure = t.procedure.use(async ({ ctx, next }) => {
 });
 
 // Action-based permission procedure
-export const actionProcedure = (action: ActionType) =>
+export const actionProcedure = (
+  action: "create" | "read" | "update" | "delete" | "publish",
+  resource: "product" | "post" | "document" | "firmware"
+) =>
   authenticatedProcedure.use(async ({ ctx, next }) => {
     const userRole = ctx.user.role as UserRole;
 
-    if (!canPerformAction(userRole, action)) {
+    if (!canPerformAction(userRole, action, resource)) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: `${userRole} role cannot perform ${action} action`,
+        message: `${userRole} role cannot perform ${action} action on ${resource}`,
       });
     }
 
@@ -82,7 +83,7 @@ export const actionProcedure = (action: ActionType) =>
     });
   });
 
-// Visibility-aware read procedure
+// Visibility-aware read procedure (requires authentication)
 export const readProcedure = authenticatedProcedure.use(
   async ({ ctx, next }) => {
     const userRole = ctx.user.role as UserRole;
@@ -98,6 +99,24 @@ export const readProcedure = authenticatedProcedure.use(
   }
 );
 
+// Public read procedure (allows unauthenticated access to public resources)
+export const publicReadProcedure = baseProcedure.use(
+  async ({ ctx, next }) => {
+    const userRole = ctx.user?.role as UserRole | undefined;
+    const readableVisibilities = userRole 
+      ? getReadableVisibilities(userRole)
+      : ["public"]; // 未登录用户只能看到 public 资源
+
+    return next({
+      ctx: {
+        ...ctx,
+        userRole: userRole || "user", // 默认为 user 角色
+        readableVisibilities,
+      },
+    });
+  }
+);
+
 // Resource visibility filter helper
 export function filterByVisibility<T extends { visibility: string }>(
   items: T[],
@@ -105,6 +124,16 @@ export function filterByVisibility<T extends { visibility: string }>(
 ): T[] {
   const readableVisibilities = getReadableVisibilities(userRole);
   return items.filter((item) =>
-    readableVisibilities.includes(item.visibility as ResourceVisibility)
+    readableVisibilities.includes(item.visibility as "public" | "private" | "draft")
+  );
+}
+
+// Resource visibility filter helper with custom visibilities
+export function filterByVisibilities<T extends { visibility: string }>(
+  items: T[],
+  readableVisibilities: string[]
+): T[] {
+  return items.filter((item) =>
+    readableVisibilities.includes(item.visibility)
   );
 }
