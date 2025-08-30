@@ -6,7 +6,7 @@ import {
   canPerformAction,
   getReadableVisibilities,
   type UserRole,
-} from "@/lib/permissions";
+} from "@/modules/auth/lib/permissions";
 
 export const createTRPCContext = cache(async () => {
   /**
@@ -100,22 +100,20 @@ export const readProcedure = authenticatedProcedure.use(
 );
 
 // Public read procedure (allows unauthenticated access to public resources)
-export const publicReadProcedure = baseProcedure.use(
-  async ({ ctx, next }) => {
-    const userRole = ctx.user?.role as UserRole | undefined;
-    const readableVisibilities = userRole 
-      ? getReadableVisibilities(userRole)
-      : ["public"]; // 未登录用户只能看到 public 资源
+export const publicReadProcedure = baseProcedure.use(async ({ ctx, next }) => {
+  const userRole = ctx.user?.role as UserRole | undefined;
+  const readableVisibilities = userRole
+    ? getReadableVisibilities(userRole)
+    : ["public"]; // 未登录用户只能看到 public 资源
 
-    return next({
-      ctx: {
-        ...ctx,
-        userRole: userRole || "user", // 默认为 user 角色
-        readableVisibilities,
-      },
-    });
-  }
-);
+  return next({
+    ctx: {
+      ...ctx,
+      userRole: userRole || "user", // 默认为 user 角色
+      readableVisibilities,
+    },
+  });
+});
 
 // Resource visibility filter helper
 export function filterByVisibility<T extends { visibility: string }>(
@@ -124,7 +122,9 @@ export function filterByVisibility<T extends { visibility: string }>(
 ): T[] {
   const readableVisibilities = getReadableVisibilities(userRole);
   return items.filter((item) =>
-    readableVisibilities.includes(item.visibility as "public" | "private" | "draft")
+    readableVisibilities.includes(
+      item.visibility as "public" | "private" | "draft"
+    )
   );
 }
 
@@ -133,7 +133,5 @@ export function filterByVisibilities<T extends { visibility: string }>(
   items: T[],
   readableVisibilities: string[]
 ): T[] {
-  return items.filter((item) =>
-    readableVisibilities.includes(item.visibility)
-  );
+  return items.filter((item) => readableVisibilities.includes(item.visibility));
 }
