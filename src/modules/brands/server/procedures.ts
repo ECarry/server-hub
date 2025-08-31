@@ -1,10 +1,15 @@
-import { createTRPCRouter, readProcedure, actionProcedure, publicReadProcedure } from "@/trpc/init";
+import {
+  createTRPCRouter,
+  readProcedure,
+  actionProcedure,
+  publicReadProcedure,
+} from "@/trpc/init";
 import { z } from "zod";
 import { db } from "@/db";
 import { brands } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export const brandProcedure = createTRPCRouter({
+export const brandsRouter = createTRPCRouter({
   // 允许未登录用户查看品牌列表
   getAll: publicReadProcedure.query(async () => {
     return await db.select().from(brands);
