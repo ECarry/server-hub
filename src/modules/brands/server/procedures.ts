@@ -1,69 +1,53 @@
-import {
-  createTRPCRouter,
-  readProcedure,
-  actionProcedure,
-  publicReadProcedure,
-} from "@/trpc/init";
+import { createTRPCRouter, publicReadProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { db } from "@/db";
 import { brands } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { ilike, count, desc } from "drizzle-orm";
+
+import {
+  MIN_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE,
+} from "@/constants";
 
 export const brandsRouter = createTRPCRouter({
-  // 允许未登录用户查看品牌列表
-  getAll: publicReadProcedure.query(async () => {
-    return await db.select().from(brands);
-  }),
-  // 允许未登录用户查看品牌详情
-  getById: publicReadProcedure
-    .input(z.object({ id: z.string() }))
+  getMany: publicReadProcedure
+    .input(
+      z.object({
+        page: z.number().default(DEFAULT_PAGE),
+        pageSize: z
+          .number()
+          .min(MIN_PAGE_SIZE)
+          .max(MAX_PAGE_SIZE)
+          .default(DEFAULT_PAGE_SIZE),
+        search: z.string().nullish(),
+      })
+    )
     .query(async ({ input }) => {
-      const brand = await db
+      const { page, pageSize, search } = input;
+
+      const data = await db
         .select()
         .from(brands)
-        .where(eq(brands.id, input.id));
-      return brand[0] || null;
-    }),
-  create: actionProcedure("create", "product")
-    .input(
-      z.object({
-        name: z.string().min(1),
-        fullName: z.string().optional(),
-        description: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      return await db.insert(brands).values(input).returning();
-    }),
-  update: actionProcedure("update", "product")
-    .input(
-      z.object({
-        id: z.string(),
-        name: z.string().optional(),
-        fullName: z.string().optional(),
-        description: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      const { id, ...updateData } = input;
-      return await db
-        .update(brands)
-        .set(updateData)
-        .where(eq(brands.id, id))
-        .returning();
-    }),
-  delete: actionProcedure("delete", "product")
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      return await db.delete(brands).where(eq(brands.id, input.id));
-    }),
-  getStats: readProcedure.query(async ({ ctx }) => {
-    const allBrands = await db.select().from(brands);
+        .where(search ? ilike(brands.name, `%${search}%`) : undefined)
+        .orderBy(desc(brands.createdAt), desc(brands.id))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize);
 
-    return {
-      total: allBrands.length,
-      userRole: ctx.userRole,
-      canManage: ctx.userRole === "admin",
-    };
-  }),
+      const [total] = await db
+        .select({
+          count: count(),
+        })
+        .from(brands)
+        .where(search ? ilike(brands.name, `%${search}%`) : undefined);
+
+      const totalPages = Math.ceil(total.count / pageSize);
+
+      return {
+        items: data,
+        total: total.count,
+        totalPages,
+      };
+    }),
 });

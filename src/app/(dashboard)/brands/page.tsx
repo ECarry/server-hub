@@ -1,12 +1,22 @@
-import { getQueryClient, trpc } from "@/trpc/server";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
+import type { SearchParams } from "nuqs/server";
+import { getQueryClient, trpc } from "@/trpc/server";
 import { ErrorBoundary } from "react-error-boundary";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { BrandsView } from "@/modules/brands/ui/views/brands-view";
+import { loadSearchParams } from "@/modules/brands/params";
 
-const page = () => {
+type Props = {
+  searchParams: Promise<SearchParams>;
+};
+
+const page = async ({ searchParams }: Props) => {
+  const filters = await loadSearchParams(searchParams);
+
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(trpc.brands.getAll.queryOptions());
+  void queryClient.prefetchQuery(
+    trpc.brands.getMany.queryOptions({ ...filters })
+  );
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
