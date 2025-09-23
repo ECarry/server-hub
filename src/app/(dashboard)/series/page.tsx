@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import type { SearchParams } from "nuqs/server";
 import { getQueryClient, trpc } from "@/trpc/server";
 import { ErrorBoundary } from "react-error-boundary";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
@@ -8,11 +7,9 @@ import {
   SeriesViewSkeleton,
 } from "@/modules/series/ui/views/series-view";
 
-type Props = {
-  searchParams: Promise<SearchParams>;
-};
+export const dynamic = "force-dynamic";
 
-const page = async ({}: Props) => {
+const page = async () => {
   const queryClient = getQueryClient();
   void queryClient.prefetchQuery(trpc.series.getMany.queryOptions());
 
