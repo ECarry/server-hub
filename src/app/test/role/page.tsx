@@ -1,11 +1,13 @@
 "use client";
 
-import { useSession } from "@/modules/auth/lib/auth-client";
+import { useSession, authClient } from "@/modules/auth/lib/auth-client";
 import { useTRPC } from "@/trpc/client";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Shield, Lock, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle2, XCircle, Shield, Lock, Eye, LogOut, LogIn, UserPlus } from "lucide-react";
+import Link from "next/link";
 
 export default function RoleTestPage() {
   const { data: session, isPending } = useSession();
@@ -21,6 +23,16 @@ export default function RoleTestPage() {
   const createProductMutation = useMutation(trpc.permissions.createProduct.mutationOptions());
   const readPrivateDocQuery = useQuery(trpc.permissions.readPrivateDocument.queryOptions());
   const readPublicDocQuery = useQuery(trpc.permissions.readPublicDocument.queryOptions());
+
+  const handleSignOut = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          window.location.reload();
+        },
+      },
+    });
+  };
 
   if (isPending) {
     return (
@@ -74,22 +86,50 @@ export default function RoleTestPage() {
               Current User
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-4">
             {user ? (
               <>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Email:</span>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">{user.email}</span>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Email:</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{user.email}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Role:</span>
+                    <Badge variant={role === "admin" ? "default" : role === "pro" ? "secondary" : "outline"}>
+                      {role.toUpperCase()}
+                    </Badge>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Role:</span>
-                  <Badge variant={role === "admin" ? "default" : role === "pro" ? "secondary" : "outline"}>
-                    {role.toUpperCase()}
-                  </Badge>
+                <div className="pt-2">
+                  <Button
+                    onClick={handleSignOut}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
                 </div>
               </>
             ) : (
-              <p className="text-sm text-slate-500">Not logged in</p>
+              <div className="space-y-4">
+                <p className="text-sm text-slate-500 text-center">Not logged in</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button asChild variant="outline">
+                    <Link href="/sign-in">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      Sign In
+                    </Link>
+                  </Button>
+                  <Button asChild>
+                    <Link href="/sign-up">
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Sign Up
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
