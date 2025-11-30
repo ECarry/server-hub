@@ -10,6 +10,7 @@ import {
   foreignKey,
   primaryKey,
   uniqueIndex,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import {
   createInsertSchema,
@@ -248,9 +249,10 @@ export const products = pgTable("products", {
   generation: text("generation"),
   description: text("description"),
   visibility: ProductVisibility("visibility").default("draft").notNull(),
-  managementIp: text("management_ip"),
-  userName: text("user_name"),
-  userPassword: text("user_password"),
+  specifications: jsonb("specifications"),
+  managementDefaults: jsonb("management_defaults"), // Stores default IP, username, password
+  releaseDate: timestamp("release_date"),
+  eolDate: timestamp("eol_date"),
   brandId: uuid("brand_id")
     .notNull()
     .references(() => brands.id),
@@ -408,7 +410,7 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
   }),
   reactions: many(commentsReactions),
   replies: many(comments, {
-    relationName: "comments_replies_fkey",
+    relationName: "comments_parent_id_fkey",
   }),
 }));
 
@@ -454,8 +456,16 @@ export const commentsReactionsRelations = relations(
 
 export const fileVisibility = pgEnum("file_visibility", ["public", "private"]);
 
+export const documentCategory = pgEnum("document_category", [
+  "manual",
+  "datasheet",
+  "whitepaper",
+  "guide",
+  "other",
+]);
+
 /* Document Schema
- *  Document Table for firmware, drivers, and utilities
+ *  Document Table for documentation files
  */
 
 export const documents = pgTable(
@@ -469,6 +479,8 @@ export const documents = pgTable(
     fileSize: text("file_size"),
     fileType: text("file_type"),
     fileKey: text("file_key"),
+    category: documentCategory("category").default("manual"),
+    language: text("language").default("en"),
     visibility: fileVisibility("visibility").default("private").notNull(),
     productId: uuid("product_id")
       .references(() => products.id)
@@ -505,6 +517,15 @@ export const documentsRelations = relations(documents, ({ one }) => ({
  *  Download Table for firmware, drivers, and utilities
  */
 
+export const downloadCategory = pgEnum("download_category", [
+  "driver",
+  "firmware",
+  "bios",
+  "utility",
+  "os_image",
+  "other",
+]);
+
 export const downloads = pgTable(
   "downloads",
   {
@@ -522,6 +543,10 @@ export const downloads = pgTable(
     checksumMd5: text("checksum_md5"),
     checksumSha256: text("checksum_sha256"),
     installationNotes: text("installation_notes"),
+    category: downloadCategory("category").default("other"),
+    versionMajor: integer("version_major"),
+    versionMinor: integer("version_minor"),
+    isCritical: boolean("is_critical").default(false),
     visibility: fileVisibility("visibility").default("private").notNull(),
     productId: uuid("product_id")
       .references(() => products.id)
