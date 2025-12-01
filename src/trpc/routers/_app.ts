@@ -8,20 +8,10 @@ import {
   proProcedure,
   hasPermission
 } from '../init';
+import { s3Router } from '@/modules/s3/server/procedures';
 
 export const appRouter = createTRPCRouter({
-  hello: baseProcedure
-    .input(
-      z.object({
-        text: z.string(),
-      }),
-    )
-    .query((opts) => {
-      return {
-        greeting: `hello ${opts.input.text}`,
-      };
-    }),
-
+  s3: s3Router,
   rbac: createTRPCRouter({
     public: publicProcedure.query(() => "I am public"),
     protected: protectedProcedure.query(({ ctx }) => `I am protected. User: ${ctx.user.id}`),
