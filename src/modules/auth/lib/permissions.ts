@@ -24,20 +24,21 @@ export const admin = ac.newRole({
   comment: ["create", "update", "delete", "read"],
 });
 
-// Define pro role - can read private content but not modify
+// Define pro role - can read private content and create comments
 export const pro = ac.newRole({
   product: ["read"],
   document: ["read", "read_private"],
   download: ["read", "read_private"],
   post: ["read"],
-  comment: ["read"],
+  comment: ["create", "read"], // Pro users can create comments
 });
 
-// Define user role - can only read public content
+// Define user role - can create and read comments, read public content
+// Note: update/delete for comments require ownership check (handled in tRPC)
 export const user = ac.newRole({
   product: ["read"],
   document: ["read"],
   download: ["read"],
   post: ["read"],
-  comment: ["read"],
+  comment: ["create", "read"], // All users can create comments
 });
