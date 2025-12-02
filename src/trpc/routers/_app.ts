@@ -9,9 +9,15 @@ import {
   hasPermission
 } from '../init';
 import { s3Router } from '@/modules/s3/server/procedures';
+import { brandsRouter } from '@/modules/brands/server/procedures';
 
 export const appRouter = createTRPCRouter({
   s3: s3Router,
+  brands: brandsRouter,
+
+
+
+  // test routes
   rbac: createTRPCRouter({
     public: publicProcedure.query(() => "I am public"),
     protected: protectedProcedure.query(({ ctx }) => `I am protected. User: ${ctx.user.id}`),
