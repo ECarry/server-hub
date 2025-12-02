@@ -17,9 +17,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Upload, X, File as FileIcon, Trash2, Image as ImageIcon } from "lucide-react";
-import Image from "next/image";
 import { useMutation } from "@tanstack/react-query";
-import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 
 interface FileItem {
   id: string;
@@ -46,7 +44,7 @@ interface FilesUploaderProps {
 
 export function FilesUploader({
   defaultAllowedTypes = "image/*",
-  defaultUploadFolder = "photos",
+  defaultUploadFolder = "test",
   onUploadSuccess,
 }: FilesUploaderProps) {
   const trpc = useTRPC();
@@ -93,11 +91,12 @@ export function FilesUploader({
       );
 
       // 1. Get Presigned URL
-      const { uploadUrl, publicUrl } = await createPresignedUrlMutation.mutateAsync({
+      const { uploadUrl, publicUrl, key } = await createPresignedUrlMutation.mutateAsync({
         filename: fileItem.file.name,
         contentType: fileItem.file.type,
         size: fileItem.file.size,
         folder: uploadFolder,
+
       });
 
       // 2. Upload to S3
@@ -120,6 +119,7 @@ export function FilesUploader({
         status: "success",
         progress: 100,
         publicUrl,
+        key,
       };
 
       setFiles((prev) =>
@@ -155,7 +155,11 @@ export function FilesUploader({
   };
 
   const handleDelete = async (fileItem: FileItem) => {
-    if (!fileItem.key) return;
+    if (!fileItem.key) {
+      setFiles((prev) => prev.filter((f) => f.id !== fileItem.id));
+      toast.warning("File removed from list (not deleted from server)");
+      return;
+    }
 
     try {
       await deleteFileMutation.mutateAsync({ key: fileItem.key });
@@ -287,11 +291,9 @@ export function FilesUploader({
                 <div className="w-16 h-16 shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
                   {file.file.type.startsWith("image/") ? (
                     file.publicUrl ? (
-                      <Image
-                        src={keyToUrl(file.publicUrl)}
+                      <img
+                        src={file.publicUrl}
                         alt={file.file.name}
-                        width={64}
-                        height={64}
                         className="w-full h-full object-cover"
                       />
                     ) : (

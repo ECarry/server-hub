@@ -46,6 +46,7 @@ export const s3Router = createTRPCRouter({
         return {
           uploadUrl: presignedUrl,
           publicUrl,
+          key,
         };
       } catch (error) {
         if (error instanceof Error) {
