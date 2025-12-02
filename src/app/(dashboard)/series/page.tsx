@@ -7,8 +7,6 @@ import {
   SeriesViewSkeleton,
 } from "@/modules/series/ui/views/series-view";
 
-export const dynamic = "force-dynamic";
-
 const page = async () => {
   const queryClient = getQueryClient();
   void queryClient.prefetchQuery(trpc.series.getMany.queryOptions());

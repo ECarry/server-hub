@@ -3,19 +3,26 @@ import { getQueryClient, trpc } from "@/trpc/server";
 import { ErrorBoundary } from "react-error-boundary";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import {
-  ProductsView,
-  ProductsViewSkeleton,
-} from "@/modules/products/ui/views/products-view";
+  ProductIdView
+} from "@/modules/products/ui/views/product-id-view";
 
-const page = async () => {
+interface Props {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+const page = async ({ params }: Props) => {
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(trpc.products.getMany.queryOptions());
+  void queryClient.prefetchQuery(trpc.products.getOne.queryOptions({
+    id: (await params).id
+  }));
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<ProductsViewSkeleton />}>
+      <Suspense fallback={<p>Loading...</p>}>
         <ErrorBoundary fallback={<div>Error</div>}>
-          <ProductsView />
+          <ProductIdView productId={(await params).id} />
         </ErrorBoundary>
       </Suspense>
     </HydrationBoundary>
