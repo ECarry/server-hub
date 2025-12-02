@@ -3,27 +3,19 @@ import { adminProcedure, createTRPCRouter } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import {
   products,
-  productsInsertSchema,
   productsUpdateSchema,
   productsCategories,
   productSeries,
   brands,
 } from "@/db/schema";
+import { productInsertSchema } from "@/modules/products/schemas";
 import { eq, desc, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
 
 export const productsRouter = createTRPCRouter({
   create: adminProcedure
-    .input(productsInsertSchema)
-    .mutation(async ({ ctx, input }) => {
-      const { role } = ctx.user;
-
-      if (role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-        });
-      }
-
+    .input(productInsertSchema)
+    .mutation(async ({ input }) => {
       const [existingProduct] = await db
         .select()
         .from(products)
@@ -43,11 +35,10 @@ export const productsRouter = createTRPCRouter({
     }),
   update: adminProcedure
     .input(productsUpdateSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { id } = input;
-      const { role } = ctx.user;
 
-      if (role !== "admin") {
+      if (!id) {
         throw new TRPCError({
           code: "FORBIDDEN",
         });
@@ -73,15 +64,8 @@ export const productsRouter = createTRPCRouter({
     }),
   remove: adminProcedure
     .input(z.object({ id: z.string().uuid() }))
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { id } = input;
-      const { role } = ctx.user;
-
-      if (role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-        });
-      }
 
       if (!id) {
         throw new TRPCError({
@@ -96,15 +80,7 @@ export const productsRouter = createTRPCRouter({
 
       return deletedProduct;
     }),
-  getMany: adminProcedure.query(async ({ ctx }) => {
-    const { role } = ctx.user;
-
-    if (role !== "admin") {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-      });
-    }
-
+  getMany: adminProcedure.query(async () => {
     const data = await db
       .select({
         ...getTableColumns(products),
@@ -127,15 +103,8 @@ export const productsRouter = createTRPCRouter({
   }),
   getOne: adminProcedure
     .input(z.object({ id: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const { id } = input;
-      const { role } = ctx.user;
-
-      if (role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-        });
-      }
 
       if (!id) {
         throw new TRPCError({

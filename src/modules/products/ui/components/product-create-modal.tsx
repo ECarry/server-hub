@@ -2,7 +2,7 @@
 "use client";
 
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { productsInsertSchema } from "@/db/schema";
+import { productInsertSchema } from "@/modules/products/schemas";
 import { Textarea } from "@/components/ui/textarea";
 
 import { IconDatabase, IconNetwork, IconServer } from "@tabler/icons-react";
@@ -36,33 +36,54 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+type FormValues = z.infer<typeof productInsertSchema>;
+
 export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(null);
-  const form = useForm<z.infer<typeof productsInsertSchema>>({
-    resolver: zodResolver(productsInsertSchema),
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(productInsertSchema),
     defaultValues: {
       model: "",
       brandId: "",
       categoryId: "",
       generation: "",
+      description: "",
+      seriesId: undefined,
+      specifications: undefined,
+      managementDefaults: undefined,
+      releaseDate: undefined,
+      eolDate: undefined,
+      visibility: undefined,
     },
   });
 
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
   const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
   const { data: series } = useQuery(trpc.series.getMany.queryOptions());
   const { data: categories } = useQuery(trpc.products.getManyCategories.queryOptions());
 
-  // series brand id === selectedBrandId
+  // Filter series by selected brand
   const filteredSeries = useMemo(() => {
     if (!series || !selectedBrandId) return [];
     return series.filter((s) => s.brandId === selectedBrandId);
   }, [series, selectedBrandId]);
 
+  const create = useMutation(trpc.products.create.mutationOptions({
+    onSuccess: async () => {
+      toast.success("Product created successfully");
+      handleClose();
+      form.reset();
+      await queryClient.invalidateQueries(trpc.products.getMany.queryOptions());
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  }));
 
-  const create = useMutation(trpc.products.create.mutationOptions());
-
-  const onSubmit = async (data: z.infer<typeof productsInsertSchema>) => {
+  const onSubmit = (data: FormValues) => {
     create.mutateAsync(data);
   };
 
@@ -92,7 +113,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
                       field.onChange(value);
                       setSelectedBrandId(value);
                     }}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -128,7 +149,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
                   <FormLabel>Series</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value || undefined}
+                    value={field.value || ""}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -163,7 +184,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
                   <FormLabel>Category</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -234,7 +255,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
                 <FormLabel>Description</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Enter brand description"
+                    placeholder="Enter product description"
                     {...field}
                     className="w-full"
                     value={field.value || ""}

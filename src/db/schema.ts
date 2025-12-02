@@ -267,9 +267,6 @@ export const productsSelectSchema = createSelectSchema(products).omit({
   createdAt: true,
   updatedAt: true,
 });
-export const productsInsertSchema = createInsertSchema(products, {
-  model: z.string().min(1).max(255),
-});
 export const productsUpdateSchema = createUpdateSchema(products);
 
 export const productsRelations = relations(products, ({ one, many }) => ({
