@@ -1,14 +1,13 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client'
 
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getFileUrl } from "@/modules/file-uploader/lib/utils";
-import { trpc } from "@/trpc/client";
+import { useTRPC } from "@/trpc/client";
 import { format, formatDistanceToNow } from "date-fns";
-import { Suspense, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { productsUpdateSchema } from "@/db/schema";
@@ -41,64 +40,37 @@ import {
 } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
-import { ImageDropzone } from "@/modules/file-uploader/ui/components/image-dropzone";
-import { cloudflareR2 } from "@/modules/file-uploader/lib/cloudflare-r2";
-import { ProductImagesCarousel } from "@/modules/product-images/ui/components/product-images-carousel";
-import { DocumentUploaderModal } from "@/modules/documentation/ui/components/document-uploader-modal";
-import { FilesAccordion } from "@/components/files-accordion";
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { keyToUrl } from "@/modules/s3/lib/key-to-url";
+
 
 interface Props {
   productId: string;
 }
 
-export const ProductSection = ({ productId }: Props) => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <ProductSectionSuspense productId={productId} />
-      </ErrorBoundary>
-    </Suspense>
-  );
-};
-
-const ProductSectionSuspense = ({ productId }: Props) => {
+export const ProductIdView = ({ productId }: Props) => {
   const [documentUploaderOpen, setDocumentUploaderOpen] = useState(false);
 
-  const utils = trpc.useUtils();
-  const updateProduct = trpc.products.update.useMutation({
-    onSuccess: () => {
-      toast.success("Product updated successfully");
-      utils.products.getOne.invalidate({ id: productId });
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-  const [data] = trpc.products.getOne.useSuspenseQuery({ id: productId });
-  const [brands] = trpc.brands.getMany.useSuspenseQuery();
-  const [series] = trpc.series.getMany.useSuspenseQuery();
-  const [categories] = trpc.productCategories.getMany.useSuspenseQuery();
-  const [documents] = trpc.documentation.getMany.useSuspenseQuery({
-    productId,
-  });
-  const [images] = trpc.productImages.getMany.useSuspenseQuery({
-    productId,
-  });
-  const createProductImage = trpc.productImages.create.useMutation({
-    onSuccess: () => {
-      toast.success("Image uploaded successfully");
-      utils.productImages.getMany.invalidate({ productId });
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-  const createPresignedUrl = trpc.filesUpload.createPresignedUrl.useMutation();
+  const trpc = useTRPC()
+  const { data: product } = useSuspenseQuery(
+    trpc.products.getOne.queryOptions({
+      id: productId
+    })
+  )
+  const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
+  const { data: series } = useQuery(trpc.series.getMany.queryOptions());
+  const { data: categories } = useQuery(trpc.products.getCategories.queryOptions());
+
+  const updateProduct = useMutation(trpc.products.update.mutationOptions())
+  const createProductImage = useMutation(trpc.products.createImage.mutationOptions())
+  const createPresignedUrl = useMutation(trpc.s3.createPresignedUrl.mutationOptions())
 
   const form = useForm<z.infer<typeof productsUpdateSchema>>({
+    // @ts-expect-error
     resolver: zodResolver(productsUpdateSchema),
+    // @ts-expect-error
     defaultValues: {
-      ...data,
+      ...product,
     },
   });
 
@@ -113,38 +85,11 @@ const ProductSectionSuspense = ({ productId }: Props) => {
     if (!file) {
       return;
     }
-
-    try {
-      const result = await cloudflareR2.upload({
-        file,
-        folder: "product-images",
-        getUploadUrl: async (input) => {
-          const data = await createPresignedUrl.mutateAsync(input);
-          return {
-            uploadUrl: data.uploadUrl,
-            publicUrl: data.publicUrl,
-            fileKey: data.fileKey,
-          };
-        },
-      });
-
-      await createProductImage.mutateAsync({
-        productId,
-        imageKey: result.fileKey,
-      });
-    } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error(error instanceof Error ? error.message : "Upload failed");
-    }
   };
 
+
   return (
-    <>
-      <DocumentUploaderModal
-        open={documentUploaderOpen}
-        onOpenChange={setDocumentUploaderOpen}
-        productId={productId}
-      />
+    <div className="max-w-7xl w-full mx-auto mb-10 px-4 pt-2.5 flex flex-col gap-y-6">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -154,28 +99,28 @@ const ProductSectionSuspense = ({ productId }: Props) => {
             <div className="flex flex-col">
               <div className="flex items-center gap-x-2">
                 <h1 className="text-3xl">
-                  {data.brand +
+                  {product.brand +
                     " " +
-                    data.series +
+                    product.series +
                     " " +
-                    data.model +
+                    product.model +
                     " " +
-                    data.generation}
+                    product.generation}
                 </h1>
-                <Badge variant={data.visibility} className="px-1.5 capitalize">
+                <Badge className="px-1.5 capitalize">
                   <IconPointFilled />
-                  {data.visibility}
+                  {product.visibility}
                 </Badge>
               </div>
               <div className="flex items-center gap-x-1">
                 <p className="text-sm">
                   <span className="text-muted-foreground">Created:</span>{" "}
-                  {format(new Date(data.createdAt), "d MMM, yyyy")}
+                  {format(new Date(product.createdAt), "d MMM, yyyy")}
                 </p>
                 <p className="text-muted-foreground text-sm">・</p>
                 <p className="text-sm">
                   <span className="text-muted-foreground">Last Updated:</span>{" "}
-                  {formatDistanceToNow(data.updatedAt)}
+                  {formatDistanceToNow(product.updatedAt)}
                 </p>
               </div>
             </div>
@@ -197,9 +142,9 @@ const ProductSectionSuspense = ({ productId }: Props) => {
             <div className="basis-1 md:basis-1/2 2xl:basis-2/3 flex flex-col gap-y-4 w-full">
               {/* IMAGE */}
               <div className="flex items-center gap-x-2">
-                <ImageDropzone onUpload={handleImageUpload} />
+                {/* <ImageDropzone onUpload={handleImageUpload} />
 
-                <ProductImagesCarousel images={images} />
+                  <ProductImagesCarousel images={product.images} /> */}
               </div>
 
               {/* DESCRIPTION */}
@@ -243,7 +188,7 @@ const ProductSectionSuspense = ({ productId }: Props) => {
                 </div>
 
                 <div className="space-y-4 mt-2">
-                  <FilesAccordion documents={documents} />
+                  {/* <FilesAccordion documents={documents} /> */}
                 </div>
               </div>
 
@@ -290,14 +235,14 @@ const ProductSectionSuspense = ({ productId }: Props) => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="w-full">
-                            {brands?.map((brand) => (
+                            {brands?.items.map((brand) => (
                               <SelectItem
                                 key={brand.id}
                                 value={brand.id}
                                 className="flex items-center gap-2"
                               >
                                 <img
-                                  src={getFileUrl(brand.logoImageKey || "")}
+                                  src={keyToUrl(brand.logoImageKey || "")}
                                   alt={brand.name}
                                   className="size-6 object-contain"
                                 />
@@ -447,67 +392,11 @@ const ProductSectionSuspense = ({ productId }: Props) => {
                     </FormItem>
                   )}
                 />
-
-                <h2 className="text-muted-foreground">Manage Info</h2>
-                <FormField
-                  control={form.control}
-                  name="managementIp"
-                  render={({ field }) => (
-                    <FormItem className="w-full">
-                      <FormLabel>Default Management IP</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter ip address"
-                          {...field}
-                          value={field.value || ""}
-                          className="w-full"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex items-center gap-x-2">
-                  <FormField
-                    control={form.control}
-                    name="userName"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter username"
-                            {...field}
-                            value={field.value || ""}
-                            className="w-full"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="userPassword"
-                    render={({ field }) => (
-                      <FormItem className="w-full">
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Enter password"
-                            {...field}
-                            value={field.value || ""}
-                            className="w-full"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </div>
               </div>
             </div>
           </div>
         </form>
       </Form>
-    </>
+    </div>
   );
 };

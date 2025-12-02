@@ -7,6 +7,8 @@ import {
   productsCategories,
   productSeries,
   brands,
+  productImageInsertSchema,
+  productImage,
 } from "@/db/schema";
 import { productInsertSchema } from "@/modules/products/schemas";
 import { eq, desc, getTableColumns } from "drizzle-orm";
@@ -132,9 +134,38 @@ export const productsRouter = createTRPCRouter({
 
       return data;
     }),
-  getManyCategories: adminProcedure.query(async () => {
+  getCategories: adminProcedure.query(async () => {
     const data = await db.select().from(productsCategories);
 
     return data;
   }),
+  createImage: adminProcedure
+    .input(productImageInsertSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { productId, imageKey, primary } = input;
+      const { role } = ctx.user;
+
+      if (role !== "admin") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+        });
+      }
+
+      if (!productId || !imageKey) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      const [newImage] = await db
+        .insert(productImage)
+        .values({
+          productId,
+          imageKey,
+          primary,
+        })
+        .returning();
+
+      return newImage;
+    }),
 });

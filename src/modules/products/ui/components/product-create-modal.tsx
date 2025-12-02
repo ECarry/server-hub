@@ -63,7 +63,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
 
   const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
   const { data: series } = useQuery(trpc.series.getMany.queryOptions());
-  const { data: categories } = useQuery(trpc.products.getManyCategories.queryOptions());
+  const { data: categories } = useQuery(trpc.products.getCategories.queryOptions());
 
   // Filter series by selected brand
   const filteredSeries = useMemo(() => {
