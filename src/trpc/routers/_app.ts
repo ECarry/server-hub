@@ -11,11 +11,13 @@ import {
 import { s3Router } from '@/modules/s3/server/procedures';
 import { brandsRouter } from '@/modules/brands/server/procedures';
 import { seriesRouter } from '@/modules/series/server/procedures';
+import { productsRouter } from '@/modules/products/server/procedures';
 
 export const appRouter = createTRPCRouter({
   s3: s3Router,
   brands: brandsRouter,
   series: seriesRouter,
+  products: productsRouter,
 
 
 
