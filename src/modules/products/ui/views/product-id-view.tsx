@@ -38,6 +38,7 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { ProductImageUploader } from "../components/product-image-uploader";
 import { ProductDocuments } from "../components/product-documents";
+import { ProductDownloads } from "../components/product-downloads";
 import { ProductUpdateInput, productUpdateSchema } from "../../schemas";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -151,6 +152,11 @@ export const ProductIdView = ({ productId }: Props) => {
               {/* Documentation */}
               <div>
                 <ProductDocuments productId={productId} />
+              </div>
+
+              {/* Downloads */}
+              <div>
+                <ProductDownloads productId={productId} />
               </div>
             </div>
 
