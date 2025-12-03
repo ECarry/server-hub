@@ -15,3 +15,12 @@ export const productInsertSchema = z.object({
 });
 
 export type ProductInsertInput = z.infer<typeof productInsertSchema>;
+
+export const productUpdateSchema = productInsertSchema
+  .extend({
+    id: z.string().uuid("Invalid product ID"),
+  })
+  .partial()
+  .required({ id: true });
+
+export type ProductUpdateInput = z.infer<typeof productUpdateSchema>;

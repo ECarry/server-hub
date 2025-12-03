@@ -3,7 +3,6 @@ import { adminProcedure, createTRPCRouter } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import {
   products,
-  productsUpdateSchema,
   productsCategories,
   productSeries,
   brands,
@@ -12,7 +11,7 @@ import {
   documentsInsertSchema,
   documents,
 } from "@/db/schema";
-import { productInsertSchema } from "@/modules/products/schemas";
+import { productInsertSchema, productUpdateSchema } from "@/modules/products/schemas";
 import { eq, desc, getTableColumns, ilike, count } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -45,7 +44,7 @@ export const productsRouter = createTRPCRouter({
       return newProduct;
     }),
   update: adminProcedure
-    .input(productsUpdateSchema)
+    .input(productUpdateSchema)
     .mutation(async ({ input }) => {
       const { id } = input;
 
