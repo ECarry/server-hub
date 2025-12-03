@@ -11,6 +11,7 @@ import {
 } from "@tabler/icons-react";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import { DeleteProductButton } from "./delete-product-button";
 
 export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
   {
@@ -111,6 +112,12 @@ export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
         {row.original.visibility}
       </Badge>
     ),
+    enableHiding: false,
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => <DeleteProductButton productId={row.original.id} />,
     enableHiding: false,
   },
 ];
