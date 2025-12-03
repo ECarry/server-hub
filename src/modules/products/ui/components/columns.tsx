@@ -12,7 +12,7 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 
-export const columns: ColumnDef<ProductsGetManyOutput[number]>[] = [
+export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
   {
     id: "select",
     header: ({ table }) => (

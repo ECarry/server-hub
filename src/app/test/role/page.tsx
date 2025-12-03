@@ -1,13 +1,30 @@
+/* eslint-disable react-hooks/static-components */
 "use client";
 
 import { useSession, authClient } from "@/modules/auth/lib/auth-client";
 import { useTRPC } from "@/trpc/client";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Shield, Lock, Eye, LogOut, LogIn, UserPlus } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Shield,
+  Lock,
+  Eye,
+  LogOut,
+  LogIn,
+  UserPlus,
+} from "lucide-react";
 import Link from "next/link";
+import { User } from "@/modules/auth/lib/auth-types";
 
 export default function RoleTestPage() {
   const { data: session, isPending } = useSession();
@@ -20,9 +37,15 @@ export default function RoleTestPage() {
   const proQuery = useQuery(trpc.rbac.pro.queryOptions());
 
   // Test new permission-based endpoints
-  const createProductMutation = useMutation(trpc.permissions.createProduct.mutationOptions());
-  const readPrivateDocQuery = useQuery(trpc.permissions.readPrivateDocument.queryOptions());
-  const readPublicDocQuery = useQuery(trpc.permissions.readPublicDocument.queryOptions());
+  const createProductMutation = useMutation(
+    trpc.permissions.createProduct.mutationOptions()
+  );
+  const readPrivateDocQuery = useQuery(
+    trpc.permissions.readPrivateDocument.queryOptions()
+  );
+  const readPublicDocQuery = useQuery(
+    trpc.permissions.readPublicDocument.queryOptions()
+  );
 
   const handleSignOut = async () => {
     await authClient.signOut({
@@ -43,9 +66,15 @@ export default function RoleTestPage() {
   }
 
   const user = session?.user;
-  const role = (user as any)?.role || "guest";
+  const role = (user as User)?.role || "guest";
 
-  const ResultBadge = ({ isSuccess, isError }: { isSuccess?: boolean; isError?: boolean }) => {
+  const ResultBadge = ({
+    isSuccess,
+    isError,
+  }: {
+    isSuccess?: boolean;
+    isError?: boolean;
+  }) => {
     if (isSuccess) {
       return (
         <Badge className="bg-green-500 hover:bg-green-600">
@@ -66,11 +95,11 @@ export default function RoleTestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Role-Based Access Control Demo
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
@@ -92,11 +121,21 @@ export default function RoleTestPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Email:</span>
-                    <span className="text-sm text-slate-600 dark:text-slate-400">{user.email}</span>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      {user.email}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Role:</span>
-                    <Badge variant={role === "admin" ? "default" : role === "pro" ? "secondary" : "outline"}>
+                    <Badge
+                      variant={
+                        role === "admin"
+                          ? "default"
+                          : role === "pro"
+                          ? "secondary"
+                          : "outline"
+                      }
+                    >
                       {role.toUpperCase()}
                     </Badge>
                   </div>
@@ -114,7 +153,9 @@ export default function RoleTestPage() {
               </>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-slate-500 text-center">Not logged in</p>
+                <p className="text-sm text-slate-500 text-center">
+                  Not logged in
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   <Button asChild variant="outline">
                     <Link href="/sign-in">
@@ -149,19 +190,31 @@ export default function RoleTestPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <span className="font-medium">Public Endpoint</span>
-                <ResultBadge isSuccess={publicQuery.isSuccess} isError={publicQuery.isError} />
+                <ResultBadge
+                  isSuccess={publicQuery.isSuccess}
+                  isError={publicQuery.isError}
+                />
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <span className="font-medium">Protected Endpoint</span>
-                <ResultBadge isSuccess={protectedQuery.isSuccess} isError={protectedQuery.isError} />
+                <ResultBadge
+                  isSuccess={protectedQuery.isSuccess}
+                  isError={protectedQuery.isError}
+                />
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <span className="font-medium">Admin Only</span>
-                <ResultBadge isSuccess={adminQuery.isSuccess} isError={adminQuery.isError} />
+                <ResultBadge
+                  isSuccess={adminQuery.isSuccess}
+                  isError={adminQuery.isError}
+                />
               </div>
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <span className="font-medium">Pro or Admin</span>
-                <ResultBadge isSuccess={proQuery.isSuccess} isError={proQuery.isError} />
+                <ResultBadge
+                  isSuccess={proQuery.isSuccess}
+                  isError={proQuery.isError}
+                />
               </div>
             </div>
           </CardContent>
@@ -185,7 +238,9 @@ export default function RoleTestPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Create Product</p>
-                    <p className="text-sm text-slate-500">Requires: product:create (Admin only)</p>
+                    <p className="text-sm text-slate-500">
+                      Requires: product:create (Admin only)
+                    </p>
                   </div>
                   <button
                     onClick={() => createProductMutation.mutate()}
@@ -212,9 +267,14 @@ export default function RoleTestPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Read Private Document</p>
-                    <p className="text-sm text-slate-500">Requires: document:read_private (Pro or Admin)</p>
+                    <p className="text-sm text-slate-500">
+                      Requires: document:read_private (Pro or Admin)
+                    </p>
                   </div>
-                  <ResultBadge isSuccess={readPrivateDocQuery.isSuccess} isError={readPrivateDocQuery.isError} />
+                  <ResultBadge
+                    isSuccess={readPrivateDocQuery.isSuccess}
+                    isError={readPrivateDocQuery.isError}
+                  />
                 </div>
                 {readPrivateDocQuery.data && (
                   <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">
@@ -228,9 +288,14 @@ export default function RoleTestPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">Read Public Document</p>
-                    <p className="text-sm text-slate-500">Requires: Authentication only (All users)</p>
+                    <p className="text-sm text-slate-500">
+                      Requires: Authentication only (All users)
+                    </p>
                   </div>
-                  <ResultBadge isSuccess={readPublicDocQuery.isSuccess} isError={readPublicDocQuery.isError} />
+                  <ResultBadge
+                    isSuccess={readPublicDocQuery.isSuccess}
+                    isError={readPublicDocQuery.isError}
+                  />
                 </div>
                 {readPublicDocQuery.data && (
                   <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">
@@ -246,9 +311,7 @@ export default function RoleTestPage() {
         <Card>
           <CardHeader>
             <CardTitle>Permission Matrix</CardTitle>
-            <CardDescription>
-              What each role can do
-            </CardDescription>
+            <CardDescription>What each role can do</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">

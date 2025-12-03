@@ -11,8 +11,14 @@ import {
   productImage,
 } from "@/db/schema";
 import { productInsertSchema } from "@/modules/products/schemas";
-import { eq, desc, getTableColumns } from "drizzle-orm";
+import { eq, desc, getTableColumns, ilike, count } from "drizzle-orm";
 import { z } from "zod";
+import {
+  DEFAULT_PAGE,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
+  MIN_PAGE_SIZE,
+} from "@/constants";
 
 export const productsRouter = createTRPCRouter({
   create: adminProcedure
@@ -82,27 +88,56 @@ export const productsRouter = createTRPCRouter({
 
       return deletedProduct;
     }),
-  getMany: adminProcedure.query(async () => {
-    const data = await db
-      .select({
-        ...getTableColumns(products),
-        category: productsCategories.name,
-        brand: brands.name,
-        brandLogoKey: brands.logoImageKey,
-        series: productSeries.name,
+  getMany: adminProcedure
+    .input(
+      z.object({
+        page: z.number().default(DEFAULT_PAGE),
+        pageSize: z
+          .number()
+          .min(MIN_PAGE_SIZE)
+          .max(MAX_PAGE_SIZE)
+          .default(DEFAULT_PAGE_SIZE),
+        search: z.string().nullish(),
       })
-      .from(products)
-      .innerJoin(
-        productsCategories,
-        eq(products.categoryId, productsCategories.id)
-      )
-      .innerJoin(brands, eq(products.brandId, brands.id))
-      .leftJoin(productSeries, eq(products.seriesId, productSeries.id))
-      .orderBy(desc(products.updatedAt))
-      .limit(100);
+    )
+    .query(async ({ input }) => {
+      const { page, pageSize, search } = input;
 
-    return data;
-  }),
+      const data = await db
+        .select({
+          ...getTableColumns(products),
+          category: productsCategories.name,
+          brand: brands.name,
+          brandLogoKey: brands.logoImageKey,
+          series: productSeries.name,
+        })
+        .from(products)
+        .where(search ? ilike(products.model, `%${search}%`) : undefined)
+        .innerJoin(
+          productsCategories,
+          eq(products.categoryId, productsCategories.id)
+        )
+        .innerJoin(brands, eq(products.brandId, brands.id))
+        .leftJoin(productSeries, eq(products.seriesId, productSeries.id))
+        .orderBy(desc(products.updatedAt))
+        .limit(pageSize)
+        .offset((page - 1) * pageSize);
+
+      const [total] = await db
+        .select({
+          count: count(),
+        })
+        .from(products)
+        .where(search ? ilike(products.model, `%${search}%`) : undefined);
+
+      const totalPages = Math.ceil(total.count / pageSize);
+
+      return {
+        items: data,
+        total: total.count,
+        totalPages,
+      };
+    }),
   getOne: adminProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ input }) => {

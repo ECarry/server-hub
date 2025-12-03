@@ -2,7 +2,7 @@
 "use client";
 
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -63,7 +63,9 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
 
   const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
   const { data: series } = useQuery(trpc.series.getMany.queryOptions());
-  const { data: categories } = useQuery(trpc.products.getCategories.queryOptions());
+  const { data: categories } = useQuery(
+    trpc.products.getCategories.queryOptions()
+  );
 
   // Filter series by selected brand
   const filteredSeries = useMemo(() => {
@@ -71,17 +73,21 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
     return series.filter((s) => s.brandId === selectedBrandId);
   }, [series, selectedBrandId]);
 
-  const create = useMutation(trpc.products.create.mutationOptions({
-    onSuccess: async () => {
-      toast.success("Product created successfully");
-      handleClose();
-      form.reset();
-      await queryClient.invalidateQueries(trpc.products.getMany.queryOptions());
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  }));
+  const create = useMutation(
+    trpc.products.create.mutationOptions({
+      onSuccess: async () => {
+        toast.success("Product created successfully");
+        handleClose();
+        form.reset();
+        await queryClient.invalidateQueries(
+          trpc.products.getMany.queryOptions({})
+        );
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
 
   const onSubmit = (data: FormValues) => {
     create.mutateAsync(data);
@@ -182,10 +188,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a category" />
