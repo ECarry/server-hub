@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ export const ProductDocuments = ({ productId }: Props) => {
 
   const { uploadFile, uploadingFiles, isUploading } = useFileUpload();
 
-  const { data: documents, refetch } = useQuery(
+  const { data: documents, refetch } = useSuspenseQuery(
     trpc.products.getDocumentations.queryOptions({
       productId,
     })
@@ -184,8 +184,8 @@ export const ProductDocuments = ({ productId }: Props) => {
                   <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-300 ${uploadState.status === "success" ? "bg-green-500" :
-                          uploadState.status === "error" ? "bg-red-500" :
-                            "bg-primary"
+                        uploadState.status === "error" ? "bg-red-500" :
+                          "bg-primary"
                         }`}
                       style={{ width: `${uploadState.progress}%` }}
                     />

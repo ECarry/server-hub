@@ -34,7 +34,7 @@ import {
   IconPointFilled,
 } from "@tabler/icons-react";
 import { Separator } from "@/components/ui/separator";
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { ProductImageUploader } from "../components/product-image-uploader";
 import { ProductDocuments } from "../components/product-documents";
@@ -52,9 +52,9 @@ export const ProductIdView = ({ productId }: Props) => {
       id: productId,
     })
   );
-  const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
-  const { data: series } = useQuery(trpc.series.getMany.queryOptions({}));
-  const { data: categories } = useQuery(
+  const { data: brands } = useSuspenseQuery(trpc.brands.getMany.queryOptions({}));
+  const { data: series } = useSuspenseQuery(trpc.series.getMany.queryOptions({}));
+  const { data: categories } = useSuspenseQuery(
     trpc.products.getCategories.queryOptions()
   );
 

@@ -18,6 +18,15 @@ const page = async ({ params }: Props) => {
   void queryClient.prefetchQuery(trpc.products.getOne.queryOptions({
     id: (await params).id
   }));
+  void queryClient.prefetchQuery(trpc.products.getCategories.queryOptions());
+  void queryClient.prefetchQuery(trpc.brands.getMany.queryOptions({}));
+  void queryClient.prefetchQuery(trpc.series.getMany.queryOptions({}));
+  void queryClient.prefetchQuery(trpc.products.getDocumentations.queryOptions({
+    productId: (await params).id
+  }));
+  void queryClient.prefetchQuery(trpc.products.getImages.queryOptions({
+    productId: (await params).id
+  }));
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

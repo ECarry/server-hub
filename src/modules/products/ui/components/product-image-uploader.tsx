@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -20,7 +20,7 @@ export const ProductImageUploader = ({ productId }: Props) => {
 
   const { uploadFile, uploadingFiles, isUploading } = useFileUpload();
 
-  const { data: images, refetch } = useQuery(
+  const { data: images, refetch } = useSuspenseQuery(
     trpc.products.getImages.queryOptions({
       productId,
     })
@@ -145,8 +145,8 @@ export const ProductImageUploader = ({ productId }: Props) => {
                 <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full transition-all duration-300 ${uploadState.status === "success" ? "bg-green-500" :
-                        uploadState.status === "error" ? "bg-red-500" :
-                          "bg-primary"
+                      uploadState.status === "error" ? "bg-red-500" :
+                        "bg-primary"
                       }`}
                     style={{ width: `${uploadState.progress}%` }}
                   />
