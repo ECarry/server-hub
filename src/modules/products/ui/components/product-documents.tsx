@@ -2,13 +2,13 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
-import { s3Client as uploadClient } from "@/modules/s3/lib/upload-client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { FileText, Loader2, Trash2, Upload, Download } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { format } from "date-fns";
+import { useFileUpload } from "@/modules/s3/hooks/use-file-upload";
 
 interface Props {
   productId: string;
@@ -17,7 +17,8 @@ interface Props {
 export const ProductDocuments = ({ productId }: Props) => {
   const trpc = useTRPC();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadingIds, setUploadingIds] = useState<string[]>([]);
+
+  const { uploadFile, uploadingFiles, isUploading } = useFileUpload();
 
   const { data: documents, refetch } = useQuery(
     trpc.products.getDocumentations.queryOptions({
@@ -25,9 +26,6 @@ export const ProductDocuments = ({ productId }: Props) => {
     })
   );
 
-  const createPresignedUrl = useMutation(
-    trpc.s3.createPresignedUrl.mutationOptions()
-  );
   const createDocumentation = useMutation(
     trpc.products.createDocumentation.mutationOptions()
   );
@@ -41,46 +39,23 @@ export const ProductDocuments = ({ productId }: Props) => {
       const files = Array.from(e.target.files);
 
       for (const file of files) {
-        const tempId = crypto.randomUUID();
-        setUploadingIds((prev) => [...prev, tempId]);
-
-        try {
-          // 1. Get Presigned URL
-          const { uploadUrl, key } = await createPresignedUrl.mutateAsync({
-            filename: file.name,
-            contentType: file.type,
-            size: file.size,
-            folder: "documents",
-          });
-
-          // 2. Upload to S3
-          await uploadClient.upload({
-            file,
-            folder: "documents",
-            getUploadUrl: async () => ({ uploadUrl, publicUrl: "" }),
-            onProgress: () => { },
-          });
-
-          // 3. Create Record in DB
-          await createDocumentation.mutateAsync({
-            productId,
-            name: file.name,
-            fileKey: key,
-            fileSize: file.size.toString(),
-            fileType: file.type,
-            visibility: "private", // Default
-          });
-
-          toast.success(`Uploaded ${file.name}`);
-        } catch (error) {
-          console.error(error);
-          toast.error(`Failed to upload ${file.name}`);
-        } finally {
-          setUploadingIds((prev) => prev.filter((id) => id !== tempId));
-        }
+        await uploadFile(file, {
+          folder: "documents",
+          onSuccess: async (key) => {
+            // Create Record in DB
+            await createDocumentation.mutateAsync({
+              productId,
+              name: file.name,
+              fileKey: key,
+              fileSize: file.size.toString(),
+              fileType: file.type,
+              visibility: "private",
+            });
+            refetch();
+          },
+        });
       }
 
-      refetch();
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -121,9 +96,9 @@ export const ProductDocuments = ({ productId }: Props) => {
           variant="outline"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploadingIds.length > 0}
+          disabled={isUploading}
         >
-          {uploadingIds.length > 0 ? (
+          {isUploading ? (
             <Loader2 className="size-4 mr-2 animate-spin" />
           ) : (
             <Upload className="size-4 mr-2" />
@@ -184,21 +159,50 @@ export const ProductDocuments = ({ productId }: Props) => {
           </div>
         ))}
 
-        {uploadingIds.map((id) => (
+        {uploadingFiles.map((uploadState) => (
           <div
-            key={id}
-            className="flex items-center p-3 border rounded-md bg-card"
+            key={uploadState.id}
+            className="flex items-center justify-between p-3 border rounded-md bg-card"
           >
-            <div className="p-2 bg-muted rounded">
-              <Loader2 className="size-5 animate-spin" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium">Uploading...</p>
+            <div className="flex items-center gap-3 flex-1 overflow-hidden">
+              <div className="p-2 bg-primary/10 rounded text-primary">
+                {uploadState.status === "success" ? (
+                  <svg className="size-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : uploadState.status === "error" ? (
+                  <svg className="size-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <Loader2 className="size-5 animate-spin" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium truncate">{uploadState.file.name}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${uploadState.status === "success" ? "bg-green-500" :
+                          uploadState.status === "error" ? "bg-red-500" :
+                            "bg-primary"
+                        }`}
+                      style={{ width: `${uploadState.progress}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground w-12 text-right">
+                    {uploadState.status === "success" ? "Done" :
+                      uploadState.status === "error" ? "Failed" :
+                        uploadState.status === "processing" ? "Saving..." :
+                          `${uploadState.progress}%`}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         ))}
 
-        {documents?.length === 0 && uploadingIds.length === 0 && (
+        {documents?.length === 0 && uploadingFiles.length === 0 && (
           <div className="py-8 text-center text-muted-foreground border-2 border-dashed rounded-md">
             No documents uploaded yet
           </div>

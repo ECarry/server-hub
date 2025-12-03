@@ -1,8 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useRef } from "react";
-import { useTRPC } from "@/trpc/client";
-import { s3Client as uploadClient } from "@/modules/s3/lib/upload-client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,17 +15,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Upload, X, File as FileIcon, Trash2, Image as ImageIcon } from "lucide-react";
+import { Upload, File as FileIcon, Trash2, Image as ImageIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { useFileUpload } from "../../hooks/use-file-upload";
+import { keyToUrl } from "../../lib/key-to-url";
 
-interface FileItem {
+interface SuccessFileItem {
   id: string;
   file: File;
-  progress: number;
-  status: "pending" | "uploading" | "success" | "error";
-  publicUrl?: string;
-  key?: string;
-  error?: string;
+  key: string;
 }
 
 const PRESETS = {
@@ -39,7 +37,7 @@ const PRESETS = {
 interface FilesUploaderProps {
   defaultAllowedTypes?: string;
   defaultUploadFolder?: string;
-  onUploadSuccess?: (file: FileItem) => void;
+  onUploadSuccess?: (file: SuccessFileItem) => void;
 }
 
 export function FilesUploader({
@@ -54,26 +52,41 @@ export function FilesUploader({
   const [allowedTypes, setAllowedTypes] = useState(defaultAllowedTypes);
   const [uploadFolder, setUploadFolder] = useState(defaultUploadFolder);
 
-  // Files State
-  const [files, setFiles] = useState<FileItem[]>([]);
+  // Use the reusable upload hook
+  const { uploadFile, uploadingFiles, isUploading } = useFileUpload();
+
+  // Store successfully uploaded files with their public URLs
+  const [successfulFiles, setSuccessfulFiles] = useState<SuccessFileItem[]>([]);
 
   // Mutations
-  const createPresignedUrlMutation = useMutation(
-    trpc.s3.createPresignedUrl.mutationOptions()
-  );
   const deleteFileMutation = useMutation(
     trpc.s3.deleteFile.mutationOptions()
   );
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles: FileItem[] = Array.from(e.target.files).map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        progress: 0,
-        status: "pending",
-      }));
-      setFiles((prev) => [...prev, ...newFiles]);
+      const files = Array.from(e.target.files);
+
+      for (const file of files) {
+        try {
+          // Upload using the hook
+          await uploadFile(file, {
+            folder: uploadFolder,
+            onSuccess: async (uploadedKey) => {
+              const successFile: SuccessFileItem = {
+                id: crypto.randomUUID(),
+                file,
+                key: uploadedKey,
+              };
+
+              setSuccessfulFiles((prev) => [...prev, successFile]);
+              onUploadSuccess?.(successFile);
+            },
+          });
+        } catch (error) {
+          console.error("Upload failed:", error);
+        }
+      }
 
       // Reset input
       if (fileInputRef.current) {
@@ -82,98 +95,21 @@ export function FilesUploader({
     }
   };
 
-  const uploadFile = async (fileItem: FileItem) => {
-    try {
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === fileItem.id ? { ...f, status: "uploading", progress: 0 } : f
-        )
-      );
-
-      // 1. Get Presigned URL
-      const { uploadUrl, publicUrl, key } = await createPresignedUrlMutation.mutateAsync({
-        filename: fileItem.file.name,
-        contentType: fileItem.file.type,
-        size: fileItem.file.size,
-        folder: uploadFolder,
-
-      });
-
-      // 2. Upload to S3
-      await uploadClient.upload({
-        file: fileItem.file,
-        folder: uploadFolder,
-        getUploadUrl: async () => ({ uploadUrl, publicUrl }), // Adapter to match interface
-        onProgress: (progress) => {
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === fileItem.id ? { ...f, progress } : f
-            )
-          );
-        },
-      });
-
-      // 3. Success
-      const successFile: FileItem = {
-        ...fileItem,
-        status: "success",
-        progress: 100,
-        publicUrl,
-        key,
-      };
-
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === fileItem.id ? successFile : f
-        )
-      );
-      toast.success(`Uploaded ${fileItem.file.name}`);
-      onUploadSuccess?.(successFile);
-    } catch (error) {
-      console.error("Upload failed:", error);
-      setFiles((prev) =>
-        prev.map((f) =>
-          f.id === fileItem.id
-            ? {
-              ...f,
-              status: "error",
-              error: error instanceof Error ? error.message : "Upload failed",
-            }
-            : f
-        )
-      );
-      toast.error(`Failed to upload ${fileItem.file.name}`);
-    }
-  };
-
-  const handleUploadAll = () => {
-    files.forEach((file) => {
-      if (file.status === "pending" || file.status === "error") {
-        uploadFile(file);
-      }
-    });
-  };
-
-  const handleDelete = async (fileItem: FileItem) => {
+  const handleDelete = async (fileItem: SuccessFileItem) => {
     if (!fileItem.key) {
-      setFiles((prev) => prev.filter((f) => f.id !== fileItem.id));
-      toast.warning("File removed from list (not deleted from server)");
+      setSuccessfulFiles((prev) => prev.filter((f) => f.id !== fileItem.id));
+      toast.warning("File removed from list");
       return;
     }
 
     try {
       await deleteFileMutation.mutateAsync({ key: fileItem.key });
-
-      setFiles((prev) => prev.filter((f) => f.id !== fileItem.id));
+      setSuccessfulFiles((prev) => prev.filter((f) => f.id !== fileItem.id));
       toast.success("File deleted");
     } catch (error) {
       console.error("Delete failed:", error);
       toast.error("Failed to delete file");
     }
-  };
-
-  const removeFile = (id: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
   const formatSize = (bytes: number) => {
@@ -258,31 +194,86 @@ export function FilesUploader({
               onChange={handleFileSelect}
             />
             <Button
+              type="button"
               className="w-full h-24 border-2 border-dashed border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 flex flex-col items-center justify-center gap-2"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
             >
               <Upload className="w-8 h-8" />
-              <span>Click to select files</span>
+              <span>{isUploading ? "Uploading..." : "Click to select files"}</span>
             </Button>
-            <Button
-              className="w-full"
-              onClick={handleUploadAll}
-              disabled={files.filter(f => f.status === 'pending' || f.status === 'error').length === 0}
-            >
-              Upload Pending Files
-            </Button>
+            {isUploading && (
+              <p className="text-sm text-center text-muted-foreground">
+                Uploading {uploadingFiles.length} file(s)...
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* File List */}
-      {files.length > 0 && (
+      {/* Uploading Files */}
+      {uploadingFiles.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Files ({files.length})</CardTitle>
+            <CardTitle>Uploading ({uploadingFiles.length})</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {files.map((file) => (
+            {uploadingFiles.map((uploadState) => (
+              <div
+                key={uploadState.id}
+                className="flex items-start gap-4 p-4 border rounded-lg bg-white dark:bg-slate-900"
+              >
+                {/* Preview / Icon */}
+                <div className="w-16 h-16 shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
+                  {uploadState.file.type.startsWith("image/") ? (
+                    <ImageIcon className="w-8 h-8 text-slate-400" />
+                  ) : (
+                    <FileIcon className="w-8 h-8 text-slate-400" />
+                  )}
+                </div>
+
+                {/* Info & Progress */}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div>
+                    <p className="font-medium truncate">{uploadState.file.name}</p>
+                    <p className="text-xs text-slate-500">
+                      {formatSize(uploadState.file.size)}
+                    </p>
+                  </div>
+
+                  {/* Status Bar */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={
+                        uploadState.status === "success" ? "text-green-600" :
+                          uploadState.status === "error" ? "text-red-600" :
+                            "text-slate-500"
+                      }>
+                        {uploadState.status === "pending" && "Preparing..."}
+                        {uploadState.status === "uploading" && "Uploading..."}
+                        {uploadState.status === "processing" && "Processing..."}
+                        {uploadState.status === "success" && "Upload complete"}
+                        {uploadState.status === "error" && (uploadState.error || "Upload failed")}
+                      </span>
+                      <span>{uploadState.progress}%</span>
+                    </div>
+                    <Progress value={uploadState.progress} className="h-2" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Successfully Uploaded Files */}
+      {successfulFiles.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Uploaded Files ({successfulFiles.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {successfulFiles.map((file) => (
               <div
                 key={file.id}
                 className="flex items-start gap-4 p-4 border rounded-lg bg-white dark:bg-slate-900"
@@ -290,9 +281,9 @@ export function FilesUploader({
                 {/* Preview / Icon */}
                 <div className="w-16 h-16 shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
                   {file.file.type.startsWith("image/") ? (
-                    file.publicUrl ? (
+                    file.key ? (
                       <img
-                        src={file.publicUrl}
+                        src={keyToUrl(file.key)}
                         alt={file.file.name}
                         className="w-full h-full object-cover"
                       />
@@ -304,7 +295,7 @@ export function FilesUploader({
                   )}
                 </div>
 
-                {/* Info & Progress */}
+                {/* Info */}
                 <div className="flex-1 min-w-0 space-y-2">
                   <div className="flex items-start justify-between">
                     <div>
@@ -313,46 +304,17 @@ export function FilesUploader({
                         {formatSize(file.file.size)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {file.status === "success" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-                          onClick={() => handleDelete(file)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                      {file.status !== "uploading" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeFile(file.id)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                      onClick={() => handleDelete(file)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
-
-                  {/* Status Bar */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className={
-                        file.status === "success" ? "text-green-600" :
-                          file.status === "error" ? "text-red-600" :
-                            "text-slate-500"
-                      }>
-                        {file.status === "pending" && "Ready to upload"}
-                        {file.status === "uploading" && "Uploading..."}
-                        {file.status === "success" && "Upload complete"}
-                        {file.status === "error" && (file.error || "Upload failed")}
-                      </span>
-                      <span>{file.progress}%</span>
-                    </div>
-                    <Progress value={file.progress} className="h-2" />
-                  </div>
+                  <p className="text-xs text-green-600">Upload complete</p>
                 </div>
               </div>
             ))}
