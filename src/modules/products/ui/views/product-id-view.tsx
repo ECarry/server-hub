@@ -39,6 +39,7 @@ import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { ProductImageUploader } from "../components/product-image-uploader";
 import { ProductDocuments } from "../components/product-documents";
 import { ProductUpdateInput, productUpdateSchema } from "../../schemas";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   productId: string;
@@ -344,6 +345,90 @@ export const ProductIdView = ({ productId }: Props) => {
           </div>
         </form>
       </Form>
+    </div>
+  );
+};
+
+export const LoadingSkeleton = () => {
+  return (
+    <div className="max-w-[1600px] w-full mx-auto mb-10 px-4 pt-2.5 flex flex-col gap-y-6">
+      {/* Header Skeleton */}
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex items-center gap-x-3">
+            <Skeleton className="h-8 w-64" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <div className="flex items-center gap-x-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-4 w-4 rounded-full" />
+            <Skeleton className="h-4 w-36" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-col xl:flex-row gap-8">
+        {/* Left Column Skeleton */}
+        <div className="flex-1 flex flex-col gap-y-8 min-w-0">
+          {/* Images Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-9 w-32" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="aspect-square rounded-md" />
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Description Section */}
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-40 w-full rounded-md" />
+          </div>
+
+          <Separator />
+
+          {/* Documents Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-9 w-36" />
+            </div>
+            <div className="space-y-2">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-md" />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden xl:block">
+          <Separator orientation="vertical" className="h-full" />
+        </div>
+
+        {/* Right Column Skeleton */}
+        <div className="w-full xl:w-[400px] flex flex-col gap-y-6">
+          <div className="border p-6 rounded-lg space-y-6 bg-card">
+            <Skeleton className="h-6 w-32" />
+
+            {/* Form Fields */}
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full rounded-md" />
+              </div>
+            ))}
+          </div>
+
+          {/* Save Button */}
+          <Skeleton className="h-10 w-full rounded-md" />
+        </div>
+      </div>
     </div>
   );
 };
