@@ -9,6 +9,13 @@ import { useRef } from "react";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { format } from "date-fns";
 import { useFileUpload } from "@/modules/s3/hooks/use-file-upload";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   productId: string;
@@ -115,60 +122,11 @@ export const ProductDownloads = ({ productId }: Props) => {
       </div>
 
       <div className="space-y-2">
-        {downloads?.map((dl) => (
-          <div
-            key={dl.id}
-            className="flex items-center justify-between p-3 border rounded-md bg-card hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex items-center gap-3 overflow-hidden">
-              <div className="p-2 bg-primary/10 rounded text-primary">
-                <Download className="size-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-medium truncate">{dl.name}</p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {dl.fileSize && <span>{formatSize(dl.fileSize)}</span>}
-                  {dl.fileSize && dl.createdAt && <span>•</span>}
-                  {dl.createdAt && <span>{format(new Date(dl.createdAt), "MMM d, yyyy")}</span>}
-                  {dl.version && (
-                    <>
-                      <span>•</span>
-                      <span>v{dl.version}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {dl.fileKey && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  asChild
-                >
-                  <a href={keyToUrl(dl.fileKey)} target="_blank" rel="noopener noreferrer" download>
-                    <Download className="size-4" />
-                  </a>
-                </Button>
-              )}
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => handleDelete(dl.id, dl.fileKey)}
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-
+        {/* Uploading Files */}
         {uploadingFiles.map((uploadState) => (
           <div
             key={uploadState.id}
-            className="flex items-center justify-between p-3 border rounded-md bg-card"
+            className="flex items-center justify-between p-4 border rounded-md bg-card"
           >
             <div className="flex items-center gap-3 flex-1 overflow-hidden">
               <div className="p-2 bg-primary/10 rounded text-primary">
@@ -190,8 +148,8 @@ export const ProductDownloads = ({ productId }: Props) => {
                   <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
                       className={`h-full transition-all duration-300 ${uploadState.status === "success" ? "bg-green-500" :
-                          uploadState.status === "error" ? "bg-red-500" :
-                            "bg-primary"
+                        uploadState.status === "error" ? "bg-red-500" :
+                          "bg-primary"
                         }`}
                       style={{ width: `${uploadState.progress}%` }}
                     />
@@ -207,6 +165,153 @@ export const ProductDownloads = ({ productId }: Props) => {
             </div>
           </div>
         ))}
+
+        {/* Downloads List with Accordion */}
+        {downloads && downloads.length > 0 && (
+          <Accordion type="single" collapsible className="space-y-2">
+            {downloads.map((dl) => (
+              <AccordionItem
+                key={dl.id}
+                value={dl.id}
+                className="border border-border rounded-md bg-card data-[state=open]:bg-accent/50 overflow-hidden"
+              >
+                <div className="flex items-center justify-between px-4 gap-2">
+                  <AccordionTrigger className="hover:no-underline py-3 flex-1">
+                    <div className="flex items-center gap-3 overflow-hidden w-full">
+                      <Download className="size-5 text-primary shrink-0" />
+                      <div className="min-w-0 text-left flex-1">
+                        <p className="font-medium truncate">{dl.name}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          {dl.createdAt && <span>{format(new Date(dl.createdAt), "d MMM yyyy")}</span>}
+                          {dl.version && (
+                            <>
+                              <span>•</span>
+                              <Badge variant="secondary" className="h-5 px-2 text-xs">
+                                {dl.version}
+                              </Badge>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {dl.fileKey && (
+                      <a
+                        href={keyToUrl(dl.fileKey)}
+                        download
+                        className="inline-flex items-center justify-center size-8 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Download className="size-4" />
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center size-8 rounded-md hover:bg-destructive/10 text-destructive transition-colors"
+                      onClick={() => handleDelete(dl.id, dl.fileKey)}
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
+                </div>
+                <AccordionContent className="pb-4 pt-2">
+                  <div className="space-y-3 pl-8">
+                    {/* File Info Grid */}
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                      {dl.version && (
+                        <div>
+                          <dt className="text-muted-foreground">Version</dt>
+                          <dd className="font-medium">{dl.version}</dd>
+                        </div>
+                      )}
+
+                      {dl.releaseDate && (
+                        <div>
+                          <dt className="text-muted-foreground">Release Date</dt>
+                          <dd className="font-medium">
+                            {format(new Date(dl.releaseDate), "d MMM yyyy")}
+                          </dd>
+                        </div>
+                      )}
+
+                      <div>
+                        <dt className="text-muted-foreground">File Size</dt>
+                        <dd className="font-medium">{formatSize(dl.fileSize)}</dd>
+                      </div>
+
+                      <div>
+                        <dt className="text-muted-foreground">Downloads</dt>
+                        <dd className="font-medium">{dl.downloadCount || 0}</dd>
+                      </div>
+
+                      {dl.operatingSystem && (
+                        <div>
+                          <dt className="text-muted-foreground">Operating System</dt>
+                          <dd className="font-medium">{dl.operatingSystem}</dd>
+                        </div>
+                      )}
+
+                      {dl.architecture && (
+                        <div>
+                          <dt className="text-muted-foreground">Architecture</dt>
+                          <dd className="font-medium">{dl.architecture}</dd>
+                        </div>
+                      )}
+
+                      {dl.category && (
+                        <div>
+                          <dt className="text-muted-foreground">Category</dt>
+                          <dd className="font-medium capitalize">{dl.category}</dd>
+                        </div>
+                      )}
+
+                      {dl.fileType && (
+                        <div>
+                          <dt className="text-muted-foreground">File Type</dt>
+                          <dd className="font-medium">{dl.fileType}</dd>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    {dl.description && (
+                      <div>
+                        <dt className="text-sm text-muted-foreground mb-1">Description</dt>
+                        <dd className="text-sm">{dl.description}</dd>
+                      </div>
+                    )}
+
+                    {/* Installation Notes */}
+                    {dl.installationNotes && (
+                      <div>
+                        <dt className="text-sm text-muted-foreground mb-1">Installation Notes</dt>
+                        <dd className="text-sm whitespace-pre-wrap">{dl.installationNotes}</dd>
+                      </div>
+                    )}
+
+                    {/* Checksums */}
+                    {(dl.checksumMd5 || dl.checksumSha256) && (
+                      <div className="space-y-1">
+                        <dt className="text-sm text-muted-foreground">Checksums</dt>
+                        {dl.checksumMd5 && (
+                          <dd className="text-xs font-mono bg-muted p-2 rounded">
+                            <span className="text-muted-foreground">MD5:</span> {dl.checksumMd5}
+                          </dd>
+                        )}
+                        {dl.checksumSha256 && (
+                          <dd className="text-xs font-mono bg-muted p-2 rounded">
+                            <span className="text-muted-foreground">SHA256:</span> {dl.checksumSha256}
+                          </dd>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        )}
 
         {downloads?.length === 0 && uploadingFiles.length === 0 && (
           <div className="py-8 text-center text-muted-foreground border-2 border-dashed rounded-md">
