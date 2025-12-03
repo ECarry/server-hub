@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @next/next/no-img-element */
-'use client'
+"use client";
 
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +43,6 @@ import { Separator } from "@/components/ui/separator";
 import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 
-
 interface Props {
   productId: string;
 }
@@ -51,19 +50,25 @@ interface Props {
 export const ProductIdView = ({ productId }: Props) => {
   const [documentUploaderOpen, setDocumentUploaderOpen] = useState(false);
 
-  const trpc = useTRPC()
+  const trpc = useTRPC();
   const { data: product } = useSuspenseQuery(
     trpc.products.getOne.queryOptions({
-      id: productId
+      id: productId,
     })
-  )
+  );
   const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
-  const { data: series } = useQuery(trpc.series.getMany.queryOptions());
-  const { data: categories } = useQuery(trpc.products.getCategories.queryOptions());
+  const { data: series } = useQuery(trpc.series.getMany.queryOptions({}));
+  const { data: categories } = useQuery(
+    trpc.products.getCategories.queryOptions()
+  );
 
-  const updateProduct = useMutation(trpc.products.update.mutationOptions())
-  const createProductImage = useMutation(trpc.products.createImage.mutationOptions())
-  const createPresignedUrl = useMutation(trpc.s3.createPresignedUrl.mutationOptions())
+  const updateProduct = useMutation(trpc.products.update.mutationOptions());
+  const createProductImage = useMutation(
+    trpc.products.createImage.mutationOptions()
+  );
+  const createPresignedUrl = useMutation(
+    trpc.s3.createPresignedUrl.mutationOptions()
+  );
 
   const form = useForm<z.infer<typeof productsUpdateSchema>>({
     // @ts-expect-error
@@ -86,7 +91,6 @@ export const ProductIdView = ({ productId }: Props) => {
       return;
     }
   };
-
 
   return (
     <div className="max-w-7xl w-full mx-auto mb-10 px-4 pt-2.5 flex flex-col gap-y-6">
@@ -271,7 +275,7 @@ export const ProductIdView = ({ productId }: Props) => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {series?.map((s) => (
+                            {series?.items.map((s) => (
                               <SelectItem key={s.id} value={s.id}>
                                 {s.name}
                               </SelectItem>

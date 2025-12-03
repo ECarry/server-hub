@@ -13,10 +13,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useSeriesFilters } from "../../hooks/use-series-filters";
 
 export const SeriesView = () => {
+  const [filters] = useSeriesFilters();
+
   const trpc = useTRPC();
-  const { data } = useSuspenseQuery(trpc.series.getMany.queryOptions());
+  const { data } = useSuspenseQuery(
+    trpc.series.getMany.queryOptions({
+      ...filters,
+    })
+  );
 
   return (
     <div className="flex flex-1 flex-col">
@@ -40,7 +47,7 @@ export const SeriesView = () => {
             </div>
             <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6 mt-4">
               <div className="overflow-hidden rounded-lg">
-                <DataTable columns={columns} data={data} />
+                <DataTable columns={columns} data={data.items} />
               </div>
             </div>
           </div>
@@ -58,8 +65,7 @@ export const SeriesViewSkeleton = () => {
           <div className="w-full flex-col justify-start space-y-6">
             <div className="flex items-center px-4 lg:px-6">
               <h1 className="text-2xl font-bold">Brands</h1>
-              <div className="flex ml-auto items-center gap-2">
-              </div>
+              <div className="flex ml-auto items-center gap-2"></div>
             </div>
             <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6 mt-4">
               <div className="overflow-hidden rounded-lg border">

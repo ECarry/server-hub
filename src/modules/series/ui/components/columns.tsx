@@ -1,10 +1,10 @@
-import { z } from "zod";
+/* eslint-disable @next/next/no-img-element */
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SeriesGetMany } from "@/modules/series/types";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 
-export const columns: ColumnDef<SeriesGetMany[number]>[] = [
+export const columns: ColumnDef<SeriesGetMany["items"][number]>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -37,7 +37,11 @@ export const columns: ColumnDef<SeriesGetMany[number]>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <div className="size-10">
-          <img src={keyToUrl(row.original.brandLogoKey) ?? ""} alt="brand logo" className="object-cover" />
+          <img
+            src={keyToUrl(row.original.brandLogoKey) ?? ""}
+            alt="brand logo"
+            className="object-cover"
+          />
         </div>
         <p className="font-semibold">{row.original.name}</p>
       </div>

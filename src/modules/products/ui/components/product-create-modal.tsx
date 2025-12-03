@@ -62,7 +62,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
   const queryClient = useQueryClient();
 
   const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
-  const { data: series } = useQuery(trpc.series.getMany.queryOptions());
+  const { data: series } = useQuery(trpc.series.getMany.queryOptions({}));
   const { data: categories } = useQuery(
     trpc.products.getCategories.queryOptions()
   );
@@ -70,7 +70,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
   // Filter series by selected brand
   const filteredSeries = useMemo(() => {
     if (!series || !selectedBrandId) return [];
-    return series.filter((s) => s.brandId === selectedBrandId);
+    return series.items.filter((s) => s.brandId === selectedBrandId);
   }, [series, selectedBrandId]);
 
   const create = useMutation(
