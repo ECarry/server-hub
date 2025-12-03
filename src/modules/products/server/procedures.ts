@@ -9,6 +9,8 @@ import {
   brands,
   productImageInsertSchema,
   productImage,
+  documentsInsertSchema,
+  documents,
 } from "@/db/schema";
 import { productInsertSchema } from "@/modules/products/schemas";
 import { eq, desc, getTableColumns, ilike, count } from "drizzle-orm";
@@ -21,6 +23,7 @@ import {
 } from "@/constants";
 
 export const productsRouter = createTRPCRouter({
+  // Products
   create: adminProcedure
     .input(productInsertSchema)
     .mutation(async ({ input }) => {
@@ -169,22 +172,17 @@ export const productsRouter = createTRPCRouter({
 
       return data;
     }),
+  // Product Categories
   getCategories: adminProcedure.query(async () => {
     const data = await db.select().from(productsCategories);
 
     return data;
   }),
+  // Product Images
   createImage: adminProcedure
     .input(productImageInsertSchema)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { productId, imageKey, primary } = input;
-      const { role } = ctx.user;
-
-      if (role !== "admin") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-        });
-      }
 
       if (!productId || !imageKey) {
         throw new TRPCError({
@@ -202,5 +200,90 @@ export const productsRouter = createTRPCRouter({
         .returning();
 
       return newImage;
+    }),
+  removeImage: adminProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const { id } = input;
+
+      if (!id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      const [deletedImage] = await db
+        .delete(productImage)
+        .where(eq(productImage.id, id))
+        .returning();
+
+      return deletedImage;
+    }),
+  getImages: adminProcedure
+    .input(z.object({ productId: z.string().uuid() }))
+    .query(async ({ input }) => {
+      const { productId } = input;
+
+      if (!productId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      const data = await db
+        .select()
+        .from(productImage)
+        .where(eq(productImage.productId, productId));
+
+      return data;
+    }),
+  // Product Documentations
+  createDocumentation: adminProcedure
+    .input(documentsInsertSchema)
+    .mutation(async ({ input }) => {
+
+      const [newDocument] = await db
+        .insert(documents)
+        .values(input)
+        .returning();
+
+      return newDocument;
+    }),
+  removeDocumentation: adminProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const { id } = input;
+
+      if (!id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      const [deletedDocumentation] = await db
+        .delete(documents)
+        .where(eq(documents.id, id))
+        .returning();
+
+      return deletedDocumentation;
+    }),
+  getDocumentations: adminProcedure
+    .input(z.object({ productId: z.string().uuid() }))
+    .query(async ({ input }) => {
+      const { productId } = input;
+
+      if (!productId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      const data = await db
+        .select()
+        .from(documents)
+        .where(eq(documents.productId, productId))
+        .orderBy(desc(documents.updatedAt));
+
+      return data;
     }),
 });

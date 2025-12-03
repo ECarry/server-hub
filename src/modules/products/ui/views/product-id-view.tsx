@@ -61,6 +61,16 @@ export const ProductIdView = ({ productId }: Props) => {
   const { data: categories } = useQuery(
     trpc.products.getCategories.queryOptions()
   );
+  const { data: documents } = useQuery(
+    trpc.products.getDocumentations.queryOptions({
+      productId,
+    })
+  );
+  const { data: images } = useQuery(
+    trpc.products.getImages.queryOptions({
+      productId,
+    })
+  );
 
   const updateProduct = useMutation(trpc.products.update.mutationOptions());
   const createProductImage = useMutation(
@@ -68,6 +78,15 @@ export const ProductIdView = ({ productId }: Props) => {
   );
   const createPresignedUrl = useMutation(
     trpc.s3.createPresignedUrl.mutationOptions()
+  );
+  const removeImage = useMutation(
+    trpc.products.removeImage.mutationOptions()
+  );
+  const createDocumentation = useMutation(
+    trpc.products.createDocumentation.mutationOptions()
+  );
+  const removeDocumentation = useMutation(
+    trpc.products.removeDocumentation.mutationOptions()
   );
 
   const form = useForm<z.infer<typeof productsUpdateSchema>>({
@@ -87,9 +106,7 @@ export const ProductIdView = ({ productId }: Props) => {
   };
 
   const handleImageUpload = async (file: File) => {
-    if (!file) {
-      return;
-    }
+
   };
 
   return (
