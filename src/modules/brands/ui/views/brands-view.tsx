@@ -5,6 +5,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useBrandsFilters } from "@/modules/brands/hooks/use-brands-filters";
 import { DataTable } from "@/components/data-table";
 import { columns } from "../components/columns";
+import { BrandsSearchFilter } from "../components/brands-search-filter";
+import { DataPagination } from "@/components/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -17,7 +19,7 @@ import {
 
 export const BrandsView = () => {
   const trpc = useTRPC();
-  const [filters] = useBrandsFilters();
+  const [filters, setFilters] = useBrandsFilters();
 
   const { data } = useSuspenseQuery(
     trpc.brands.getMany.queryOptions({ ...filters })
@@ -32,6 +34,7 @@ export const BrandsView = () => {
             <div className="flex items-center px-4 lg:px-6">
               <h1 className="text-2xl font-bold">Brands</h1>
               <div className="flex ml-auto items-center gap-2">
+                <BrandsSearchFilter />
                 {/* <Button
                   variant="outline"
                   size="sm"
@@ -46,6 +49,13 @@ export const BrandsView = () => {
               <div className="overflow-hidden rounded-lg">
                 <DataTable columns={columns} data={data.items} />
               </div>
+              <DataPagination
+                page={filters.page}
+                totalPages={data.totalPages}
+                onPageChange={(page) => {
+                  setFilters({ page });
+                }}
+              />
             </div>
           </div>
         </div>

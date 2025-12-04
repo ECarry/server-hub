@@ -4,6 +4,8 @@ import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { DataTable } from "@/components/data-table";
 import { columns } from "../components/columns";
+import { SeriesSearchFilter } from "../components/series-search-filter";
+import { DataPagination } from "@/components/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -16,7 +18,7 @@ import {
 import { useSeriesFilters } from "../../hooks/use-series-filters";
 
 export const SeriesView = () => {
-  const [filters] = useSeriesFilters();
+  const [filters, setFilters] = useSeriesFilters();
 
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
@@ -35,6 +37,7 @@ export const SeriesView = () => {
             <div className="flex items-center px-4 lg:px-6">
               <h1 className="text-2xl font-bold">Series</h1>
               <div className="flex ml-auto items-center gap-2">
+                <SeriesSearchFilter />
                 {/* <Button
                   variant="outline"
                   size="sm"
@@ -49,6 +52,13 @@ export const SeriesView = () => {
               <div className="overflow-hidden rounded-lg">
                 <DataTable columns={columns} data={data.items} />
               </div>
+              <DataPagination
+                page={filters.page}
+                totalPages={data.totalPages}
+                onPageChange={(page) => {
+                  setFilters({ page });
+                }}
+              />
             </div>
           </div>
         </div>
