@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SeriesGetMany } from "@/modules/series/types";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { DeleteSeriesButton } from "./delete-series-button";
 import { EditSeriesButton } from "./edit-series-button";
+import Image from "next/image";
 
 export const columns: ColumnDef<SeriesGetMany["items"][number]>[] = [
   {
@@ -38,11 +38,12 @@ export const columns: ColumnDef<SeriesGetMany["items"][number]>[] = [
     header: "Logo",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <div className="size-10">
-          <img
+        <div className="size-10 relative">
+          <Image
             src={keyToUrl(row.original.brandLogoKey) ?? ""}
             alt="brand logo"
-            className="object-cover"
+            fill
+            className="object-contain"
           />
         </div>
         <p className="font-semibold">{row.original.brandName}</p>

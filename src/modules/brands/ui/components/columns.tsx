@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { brandsSelectSchema } from "@/db/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { DeleteBrandButton } from "./delete-brand-button";
 import { EditBrandButton } from "./edit-brand-button";
+import Image from "next/image";
 
 export const columns: ColumnDef<z.infer<typeof brandsSelectSchema>>[] = [
   {
@@ -39,11 +39,12 @@ export const columns: ColumnDef<z.infer<typeof brandsSelectSchema>>[] = [
     accessorKey: "logoImageKey",
     header: "Logo",
     cell: ({ row }) => (
-      <div className="flex items-center justify-center w-10 h-10">
-        <img
+      <div className="flex items-center justify-center w-10 h-10 relative">
+        <Image
           src={keyToUrl(row.original.logoImageKey) ?? ""}
           alt="brand logo"
-          className="object-cover"
+          fill
+          className="object-contain"
         />
       </div>
     ),

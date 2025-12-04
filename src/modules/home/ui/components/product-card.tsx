@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { cn } from "@/lib/utils";
 
@@ -81,11 +81,14 @@ export function ProductCard({ product }: { product: Product }) {
                 key={index}
                 className="px-7 flex items-center justify-center"
               >
-                <img
-                  src={keyToUrl(image.imageKey)}
-                  alt="Product Image"
-                  className="rounded-3xl overflow-hidden object-contain h-[283px] w-full"
-                />
+                <div className="relative h-[283px] w-full">
+                  <Image
+                    src={keyToUrl(image.imageKey)}
+                    alt="Product Image"
+                    fill
+                    className="rounded-3xl object-contain"
+                  />
+                </div>
               </CarouselItem>
             ))}
           </CarouselContent>
@@ -127,11 +130,12 @@ export function ProductCard({ product }: { product: Product }) {
 
       {/* BOTTOM LOGO TITLE  */}
       <div className="flex items-center gap-x-3 w-full">
-        <div className="shrink-0 h-10 w-10 rounded-xl overflow-hidden bg-muted p-1">
-          <img
+        <div className="shrink-0 h-10 w-10 rounded-xl overflow-hidden bg-muted p-1 relative">
+          <Image
             src={keyToUrl(product.brandLogoKey ?? "")}
             alt="logo"
-            className="object-contain w-full h-full"
+            fill
+            className="object-contain"
           />
         </div>
 

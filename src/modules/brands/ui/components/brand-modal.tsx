@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useTRPC } from "@/trpc/client";
@@ -23,6 +22,7 @@ import { Loader2, Upload, X } from "lucide-react";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { Textarea } from "@/components/ui/textarea";
 import { useWatch } from "react-hook-form";
+import Image from "next/image";
 
 interface Props {
   open: boolean;
@@ -45,7 +45,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const BrandModal = ({ open, onOpenChange, brandId, initialData }: Props) => {
+export const BrandModal = ({
+  open,
+  onOpenChange,
+  brandId,
+  initialData,
+}: Props) => {
   const isEditMode = !!brandId;
 
   const form = useForm<FormValues>({
@@ -233,10 +238,11 @@ export const BrandModal = ({ open, onOpenChange, brandId, initialData }: Props) 
                   <div className="space-y-2">
                     {logoPreview ? (
                       <div className="relative w-32 h-32 rounded-md overflow-hidden border bg-muted">
-                        <img
+                        <Image
                           src={logoPreview}
                           alt="Logo preview"
-                          className="w-full h-full object-contain"
+                          fill
+                          className="object-contain"
                         />
                         <Button
                           type="button"

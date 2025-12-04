@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProductsGetManyOutput } from "@/modules/products/types";
@@ -11,6 +10,7 @@ import {
 } from "@tabler/icons-react";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
+import Image from "next/image";
 import { DeleteProductButton } from "./delete-product-button";
 
 export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
@@ -45,10 +45,12 @@ export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
     header: "Brand",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <img
+        <Image
           src={keyToUrl(row.original.brandLogoKey || "")}
           alt={row.original.brand}
-          className="size-6 object-contain"
+          width={24}
+          height={24}
+          className="object-contain"
         />
         <p>{row.original.brand}</p>
       </div>

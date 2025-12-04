@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useTRPC } from "@/trpc/client";
@@ -25,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ResponsiveModal } from "@/components/responsive-modal";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
+import Image from "next/image";
 import { useEffect } from "react";
 
 interface Props {
@@ -44,7 +44,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const SeriesModal = ({ open, onOpenChange, seriesId, initialData }: Props) => {
+export const SeriesModal = ({
+  open,
+  onOpenChange,
+  seriesId,
+  initialData,
+}: Props) => {
   const isEditMode = !!seriesId;
 
   const form = useForm<FormValues>({
@@ -140,10 +145,12 @@ export const SeriesModal = ({ open, onOpenChange, seriesId, initialData }: Props
                         value={brand.id}
                         className="flex items-center gap-2"
                       >
-                        <img
+                        <Image
                           src={keyToUrl(brand.logoImageKey || "")}
                           alt={brand.name}
-                          className="size-6 object-contain"
+                          width={24}
+                          height={24}
+                          className="object-contain"
                         />
                         {brand.name}
                       </SelectItem>

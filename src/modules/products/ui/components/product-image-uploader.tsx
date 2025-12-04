@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
@@ -9,6 +8,7 @@ import { Loader2, Trash2, Upload } from "lucide-react";
 import { useRef } from "react";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { useFileUpload } from "@/modules/s3/hooks/use-file-upload";
+import Image from "next/image";
 
 interface Props {
   productId: string;
@@ -101,10 +101,11 @@ export const ProductImageUploader = ({ productId }: Props) => {
             key={image.id}
             className="group relative aspect-square rounded-md overflow-hidden border bg-muted"
           >
-            <img
+            <Image
               src={keyToUrl(image.imageKey)}
               alt="Product image"
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <Button
@@ -131,12 +132,32 @@ export const ProductImageUploader = ({ productId }: Props) => {
           >
             <div className="absolute inset-0 flex flex-col items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
               {uploadState.status === "success" ? (
-                <svg className="size-12 text-green-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="size-12 text-green-500 mb-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               ) : uploadState.status === "error" ? (
-                <svg className="size-12 text-red-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="size-12 text-red-500 mb-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               ) : (
                 <Loader2 className="size-12 animate-spin text-primary mb-2" />
@@ -144,18 +165,24 @@ export const ProductImageUploader = ({ productId }: Props) => {
               <div className="w-full space-y-1">
                 <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${uploadState.status === "success" ? "bg-green-500" :
-                      uploadState.status === "error" ? "bg-red-500" :
-                        "bg-primary"
-                      }`}
+                    className={`h-full transition-all duration-300 ${
+                      uploadState.status === "success"
+                        ? "bg-green-500"
+                        : uploadState.status === "error"
+                        ? "bg-red-500"
+                        : "bg-primary"
+                    }`}
                     style={{ width: `${uploadState.progress}%` }}
                   />
                 </div>
                 <p className="text-xs text-center text-muted-foreground">
-                  {uploadState.status === "success" ? "Done" :
-                    uploadState.status === "error" ? "Failed" :
-                      uploadState.status === "processing" ? "Saving..." :
-                        `${uploadState.progress}%`}
+                  {uploadState.status === "success"
+                    ? "Done"
+                    : uploadState.status === "error"
+                    ? "Failed"
+                    : uploadState.status === "processing"
+                    ? "Saving..."
+                    : `${uploadState.progress}%`}
                 </p>
               </div>
             </div>

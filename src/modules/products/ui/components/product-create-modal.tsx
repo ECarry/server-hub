@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useTRPC } from "@/trpc/client";
@@ -30,6 +29,7 @@ import { IconDatabase, IconNetwork, IconServer } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { ResponsiveModal } from "@/components/responsive-modal";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
+import Image from "next/image";
 
 interface Props {
   open: boolean;
@@ -133,10 +133,12 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
                           value={brand.id}
                           className="flex items-center gap-2"
                         >
-                          <img
+                          <Image
                             src={keyToUrl(brand.logoImageKey || "")}
                             alt={brand.name}
-                            className="size-6 object-contain"
+                            width={24}
+                            height={24}
+                            className="object-contain"
                           />
                           {brand.name}
                         </SelectItem>

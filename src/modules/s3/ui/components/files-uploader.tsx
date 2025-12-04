@@ -1,8 +1,13 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useRef } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,11 +20,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Upload, File as FileIcon, Trash2, Image as ImageIcon } from "lucide-react";
+import {
+  Upload,
+  File as FileIcon,
+  Trash2,
+  Image as ImageIcon,
+} from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { useFileUpload } from "../../hooks/use-file-upload";
 import { keyToUrl } from "../../lib/key-to-url";
+import Image from "next/image";
 
 interface SuccessFileItem {
   id: string;
@@ -59,9 +70,7 @@ export function FilesUploader({
   const [successfulFiles, setSuccessfulFiles] = useState<SuccessFileItem[]>([]);
 
   // Mutations
-  const deleteFileMutation = useMutation(
-    trpc.s3.deleteFile.mutationOptions()
-  );
+  const deleteFileMutation = useMutation(trpc.s3.deleteFile.mutationOptions());
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -134,7 +143,11 @@ export function FilesUploader({
               <Label htmlFor="allowedTypes">Allowed File Types</Label>
               <div className="flex gap-2">
                 <Select
-                  value={Object.values(PRESETS).includes(allowedTypes) ? allowedTypes : "custom"}
+                  value={
+                    Object.values(PRESETS).includes(allowedTypes)
+                      ? allowedTypes
+                      : "custom"
+                  }
                   onValueChange={(value) => {
                     if (value !== "custom") {
                       setAllowedTypes(value);
@@ -200,7 +213,9 @@ export function FilesUploader({
               disabled={isUploading}
             >
               <Upload className="w-8 h-8" />
-              <span>{isUploading ? "Uploading..." : "Click to select files"}</span>
+              <span>
+                {isUploading ? "Uploading..." : "Click to select files"}
+              </span>
             </Button>
             {isUploading && (
               <p className="text-sm text-center text-muted-foreground">
@@ -235,7 +250,9 @@ export function FilesUploader({
                 {/* Info & Progress */}
                 <div className="flex-1 min-w-0 space-y-2">
                   <div>
-                    <p className="font-medium truncate">{uploadState.file.name}</p>
+                    <p className="font-medium truncate">
+                      {uploadState.file.name}
+                    </p>
                     <p className="text-xs text-slate-500">
                       {formatSize(uploadState.file.size)}
                     </p>
@@ -244,16 +261,21 @@ export function FilesUploader({
                   {/* Status Bar */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-xs">
-                      <span className={
-                        uploadState.status === "success" ? "text-green-600" :
-                          uploadState.status === "error" ? "text-red-600" :
-                            "text-slate-500"
-                      }>
+                      <span
+                        className={
+                          uploadState.status === "success"
+                            ? "text-green-600"
+                            : uploadState.status === "error"
+                            ? "text-red-600"
+                            : "text-slate-500"
+                        }
+                      >
                         {uploadState.status === "pending" && "Preparing..."}
                         {uploadState.status === "uploading" && "Uploading..."}
                         {uploadState.status === "processing" && "Processing..."}
                         {uploadState.status === "success" && "Upload complete"}
-                        {uploadState.status === "error" && (uploadState.error || "Upload failed")}
+                        {uploadState.status === "error" &&
+                          (uploadState.error || "Upload failed")}
                       </span>
                       <span>{uploadState.progress}%</span>
                     </div>
@@ -282,10 +304,12 @@ export function FilesUploader({
                 <div className="w-16 h-16 shrink-0 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center border">
                   {file.file.type.startsWith("image/") ? (
                     file.key ? (
-                      <img
+                      <Image
                         src={keyToUrl(file.key)}
                         alt={file.file.name}
-                        className="w-full h-full object-cover"
+                        width={64}
+                        height={64}
+                        className="object-cover w-full h-full"
                       />
                     ) : (
                       <ImageIcon className="w-8 h-8 text-slate-400" />

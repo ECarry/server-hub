@@ -8,6 +8,8 @@ const s3Protocol = s3Url ? s3Url.protocol.replace(":", "") : "https";
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
+    loader: 'custom',
+    loaderFile: './src/lib/cloudflare-image-loader.ts',
     remotePatterns: s3Hostname
       ? [
         {

@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +40,7 @@ import { ProductDocuments } from "../components/product-documents";
 import { ProductDownloads } from "../components/product-downloads";
 import { ProductUpdateInput, productUpdateSchema } from "../../schemas";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 interface Props {
   productId: string;
@@ -53,8 +53,12 @@ export const ProductIdView = ({ productId }: Props) => {
       id: productId,
     })
   );
-  const { data: brands } = useSuspenseQuery(trpc.brands.getMany.queryOptions({}));
-  const { data: series } = useSuspenseQuery(trpc.series.getMany.queryOptions({}));
+  const { data: brands } = useSuspenseQuery(
+    trpc.brands.getMany.queryOptions({})
+  );
+  const { data: series } = useSuspenseQuery(
+    trpc.series.getMany.queryOptions({})
+  );
   const { data: categories } = useSuspenseQuery(
     trpc.products.getCategories.queryOptions()
   );
@@ -99,15 +103,21 @@ export const ProductIdView = ({ productId }: Props) => {
                     (product.generation || "")}
                 </h1>
                 <Badge
-                  variant={product.visibility === 'public' ? 'default' : 'secondary'}
+                  variant={
+                    product.visibility === "public" ? "default" : "secondary"
+                  }
                   className="px-2 py-0.5 capitalize flex items-center gap-1"
                 >
-                  {product.visibility === 'public' && <IconPointFilled className="size-3" />}
+                  {product.visibility === "public" && (
+                    <IconPointFilled className="size-3" />
+                  )}
                   {product.visibility}
                 </Badge>
               </div>
               <div className="flex items-center gap-x-2 text-sm text-muted-foreground">
-                <p>Created {format(new Date(product.createdAt), "d MMM yyyy")}</p>
+                <p>
+                  Created {format(new Date(product.createdAt), "d MMM yyyy")}
+                </p>
                 <span>•</span>
                 <p>Last Updated {formatDistanceToNow(product.updatedAt)} ago</p>
               </div>
@@ -117,7 +127,6 @@ export const ProductIdView = ({ productId }: Props) => {
           <div className="flex flex-col xl:flex-row gap-8">
             {/* Left Column - Main Content */}
             <div className="flex-1 flex flex-col gap-y-8 min-w-0">
-
               {/* Images */}
               <div>
                 <ProductImageUploader productId={productId} />
@@ -132,7 +141,9 @@ export const ProductIdView = ({ productId }: Props) => {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-lg font-semibold">Description</FormLabel>
+                      <FormLabel className="text-lg font-semibold">
+                        Description
+                      </FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="Enter description"
@@ -214,16 +225,15 @@ export const ProductIdView = ({ productId }: Props) => {
                         </FormControl>
                         <SelectContent>
                           {brands?.items.map((brand) => (
-                            <SelectItem
-                              key={brand.id}
-                              value={brand.id}
-                            >
+                            <SelectItem key={brand.id} value={brand.id}>
                               <div className="flex items-center gap-2">
                                 {brand.logoImageKey && (
-                                  <img
+                                  <Image
                                     src={keyToUrl(brand.logoImageKey)}
                                     alt={brand.name}
-                                    className="size-4 object-contain"
+                                    width={16}
+                                    height={16}
+                                    className="object-contain"
                                   />
                                 )}
                                 {brand.name}
@@ -284,10 +294,18 @@ export const ProductIdView = ({ productId }: Props) => {
                           {categories?.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
                               <div className="flex items-center gap-2">
-                                {category.name === "server" && <IconServer className="size-4" />}
-                                {category.name === "network" && <IconNetwork className="size-4" />}
-                                {category.name === "storage" && <IconDatabase className="size-4" />}
-                                <span className="capitalize">{category.name}</span>
+                                {category.name === "server" && (
+                                  <IconServer className="size-4" />
+                                )}
+                                {category.name === "network" && (
+                                  <IconNetwork className="size-4" />
+                                )}
+                                {category.name === "storage" && (
+                                  <IconDatabase className="size-4" />
+                                )}
+                                <span className="capitalize">
+                                  {category.name}
+                                </span>
                               </div>
                             </SelectItem>
                           ))}

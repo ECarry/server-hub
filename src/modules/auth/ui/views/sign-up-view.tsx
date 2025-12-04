@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
 import { authClient } from "../../lib/auth-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -189,7 +189,7 @@ export const SignUpView = () => {
                 </div>
                 {!!error && (
                   <Alert className="bg-destructive/10 border-none">
-                    <OctagonAlert className="h-4 w-4 !text-destructive" />
+                    <OctagonAlert className="h-4 w-4 text-destructive" />
                     <AlertTitle>{error}</AlertTitle>
                   </Alert>
                 )}
@@ -227,10 +227,12 @@ export const SignUpView = () => {
             </form>
           </Form>
           <div className="col-span-2 bg-radial from-sidebar-accent to-sidebar relative hidden md:flex flex-col gap-y-4 items-center justify-center">
-            <img
+            <Image
               src="/bg.jpg"
               alt="Better nextjs"
-              className="size-full object-cover"
+              fill
+              className="object-cover"
+              priority
             />
           </div>
         </CardContent>
