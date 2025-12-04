@@ -1,6 +1,4 @@
-import { z } from 'zod';
 import {
-  baseProcedure,
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
@@ -12,12 +10,14 @@ import { s3Router } from '@/modules/s3/server/procedures';
 import { brandsRouter } from '@/modules/brands/server/procedures';
 import { seriesRouter } from '@/modules/series/server/procedures';
 import { productsRouter } from '@/modules/products/server/procedures';
+import { homeRouter } from '@/modules/home/server/procedures';
 
 export const appRouter = createTRPCRouter({
   s3: s3Router,
   brands: brandsRouter,
   series: seriesRouter,
   products: productsRouter,
+  home: homeRouter,
 
 
 
