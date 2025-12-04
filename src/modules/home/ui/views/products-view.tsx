@@ -12,7 +12,7 @@ export const ProductsView = () => {
 
   const { data } = useSuspenseQuery(
     trpc.home.getManyProducts.queryOptions({
-      ...filters,
+      brandId: filters.brandId || undefined,
     })
   );
 

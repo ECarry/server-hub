@@ -22,7 +22,9 @@ const page = async ({ searchParams }: Props) => {
 
   const queryClient = getQueryClient();
   void queryClient.prefetchQuery(
-    trpc.home.getManyProducts.queryOptions({ ...filters })
+    trpc.home.getManyProducts.queryOptions({
+      brandId: filters.brandId || undefined,
+    })
   );
   void queryClient.prefetchQuery(trpc.home.getManyBrands.queryOptions());
 
