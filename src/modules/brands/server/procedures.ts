@@ -12,6 +12,12 @@ import {
 } from "@/constants";
 
 export const brandsRouter = createTRPCRouter({
+  create: adminProcedure
+    .input(z.object({ name: z.string().min(1) }))
+    .mutation(async ({ input }) => {
+      const [newBrand] = await db.insert(brands).values(input).returning();
+      return newBrand;
+    }),
   getMany: adminProcedure
     .input(
       z.object({

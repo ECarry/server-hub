@@ -5,7 +5,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useBrandsFilters } from "@/modules/brands/hooks/use-brands-filters";
 import { DataTable } from "@/components/data-table";
 import { columns } from "../components/columns";
-import { BrandsSearchFilter } from "../components/brands-search-filter";
 import { DataPagination } from "@/components/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -32,9 +31,9 @@ export const BrandsView = () => {
           <div className="w-full flex-col justify-start space-y-6">
             {/* <BrandCreateModal open={isOpen} onOpenChange={setIsOpen} /> */}
             <div className="flex items-center px-4 lg:px-6">
-              <h1 className="text-2xl font-bold">Brands</h1>
+              {/* <h1 className="text-2xl font-bold">Brands</h1> */}
               <div className="flex ml-auto items-center gap-2">
-                <BrandsSearchFilter />
+                {/* <BrandsSearchFilter /> */}
                 {/* <Button
                   variant="outline"
                   size="sm"

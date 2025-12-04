@@ -8,6 +8,12 @@ import { DEFAULT_PAGE } from "@/constants";
 import { MIN_PAGE_SIZE, MAX_PAGE_SIZE, DEFAULT_PAGE_SIZE } from "@/constants";
 
 export const seriesRouter = createTRPCRouter({
+  create: publicProcedure
+    .input(z.object({ name: z.string().min(1), brandId: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const [newSeries] = await db.insert(productSeries).values(input).returning();
+      return newSeries;
+    }),
   getMany: publicProcedure
     .input(
       z.object({

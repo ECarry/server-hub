@@ -1,19 +1,23 @@
 import { Suspense } from "react";
-import type { SearchParams } from "nuqs/server";
-import { getQueryClient, trpc } from "@/trpc/server";
 import { ErrorBoundary } from "react-error-boundary";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { getQueryClient, trpc } from "@/trpc/server";
 import {
   BrandsView,
   BrandsViewSkeleton,
 } from "@/modules/brands/ui/views/brands-view";
+import { ErrorStatus } from "@/modules/products/ui/views/products-view";
 import { loadSearchParams } from "@/modules/brands/params";
+import { BrandsListHeader } from "@/modules/brands/ui/components/brands-list-header";
 
 type Props = {
-  searchParams: Promise<SearchParams>;
+  searchParams: Promise<{
+    search?: string;
+    page?: string;
+  }>;
 };
 
-const page = async ({ searchParams }: Props) => {
+const Page = async ({ searchParams }: Props) => {
   const filters = await loadSearchParams(searchParams);
 
   const queryClient = getQueryClient();
@@ -22,14 +26,17 @@ const page = async ({ searchParams }: Props) => {
   );
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<BrandsViewSkeleton />}>
-        <ErrorBoundary fallback={<div>Error</div>}>
-          <BrandsView />
-        </ErrorBoundary>
-      </Suspense>
-    </HydrationBoundary>
+    <>
+      <BrandsListHeader />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <Suspense fallback={<BrandsViewSkeleton />}>
+          <ErrorBoundary fallback={<ErrorStatus />}>
+            <BrandsView />
+          </ErrorBoundary>
+        </Suspense>
+      </HydrationBoundary>
+    </>
   );
 };
 
-export default page;
+export default Page;

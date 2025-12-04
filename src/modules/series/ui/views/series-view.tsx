@@ -4,7 +4,6 @@ import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { DataTable } from "@/components/data-table";
 import { columns } from "../components/columns";
-import { SeriesSearchFilter } from "../components/series-search-filter";
 import { DataPagination } from "@/components/data-table-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -35,9 +34,9 @@ export const SeriesView = () => {
           <div className="w-full flex-col justify-start space-y-6">
             {/* <BrandCreateModal open={isOpen} onOpenChange={setIsOpen} /> */}
             <div className="flex items-center px-4 lg:px-6">
-              <h1 className="text-2xl font-bold">Series</h1>
+              {/* <h1 className="text-2xl font-bold">Series</h1> */}
               <div className="flex ml-auto items-center gap-2">
-                <SeriesSearchFilter />
+                {/* <SeriesSearchFilter /> */}
                 {/* <Button
                   variant="outline"
                   size="sm"
