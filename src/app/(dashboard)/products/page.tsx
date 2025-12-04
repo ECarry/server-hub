@@ -5,9 +5,11 @@ import { ErrorBoundary } from "react-error-boundary";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import {
   ProductsView,
-  ProductsViewSkeleton,
+  LoadingStatus,
+  ErrorStatus,
 } from "@/modules/products/ui/views/products-view";
 import { loadSearchParams } from "@/modules/products/params";
+import { ProductsListHeader } from "@/modules/products/ui/components/products-list-header";
 
 type Props = {
   searchParams: Promise<SearchParams>;
@@ -22,13 +24,16 @@ const page = async ({ searchParams }: Props) => {
   );
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<ProductsViewSkeleton />}>
-        <ErrorBoundary fallback={<div>Error</div>}>
-          <ProductsView />
-        </ErrorBoundary>
-      </Suspense>
-    </HydrationBoundary>
+    <>
+      <ProductsListHeader />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <Suspense fallback={<LoadingStatus />}>
+          <ErrorBoundary fallback={<ErrorStatus />}>
+            <ProductsView />
+          </ErrorBoundary>
+        </Suspense>
+      </HydrationBoundary>
+    </>
   );
 };
 
