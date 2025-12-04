@@ -13,7 +13,14 @@ import {
 
 export const brandsRouter = createTRPCRouter({
   create: adminProcedure
-    .input(z.object({ name: z.string().min(1) }))
+    .input(
+      z.object({
+        name: z.string().min(1),
+        fullName: z.string().optional(),
+        description: z.string().optional(),
+        logoImageKey: z.string().optional(),
+      })
+    )
     .mutation(async ({ input }) => {
       const [newBrand] = await db.insert(brands).values(input).returning();
       return newBrand;
