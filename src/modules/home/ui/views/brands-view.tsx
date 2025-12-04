@@ -50,7 +50,7 @@ export const BrandsViewLoading = () => {
           <span>Filters</span>
         </div>
       </Button>
-      <FilterCarousel value={null} data={[]} onSelect={() => { }} />
+      <FilterCarousel value={null} data={[]} onSelect={() => { }} isLoading />
     </div>
   )
 }
