@@ -7,7 +7,7 @@ import { useBrandsFilters } from "../../hooks/use-brands-filters";
 import { DEFAULT_PAGE } from "@/constants";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { BrandsSearchFilter } from "./brands-search-filter";
-import { BrandCreateModal } from "./brand-create-modal";
+import { BrandModal } from "./brand-modal";
 
 export const BrandsListHeader = () => {
   const [open, setOpen] = useState(false);
@@ -24,7 +24,7 @@ export const BrandsListHeader = () => {
 
   return (
     <>
-      <BrandCreateModal open={open} onOpenChange={setOpen} />
+      <BrandModal open={open} onOpenChange={setOpen} />
       <div className="py-4 px-4 md:px-8 flex flex-col gap-y-8">
         <div>
           <h1 className="text-2xl font-bold">Brands</h1>

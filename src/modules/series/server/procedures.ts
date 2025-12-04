@@ -14,6 +14,43 @@ export const seriesRouter = createTRPCRouter({
       const [newSeries] = await db.insert(productSeries).values(input).returning();
       return newSeries;
     }),
+  getById: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ input }) => {
+      const [series] = await db
+        .select()
+        .from(productSeries)
+        .where(eq(productSeries.id, input.id))
+        .limit(1);
+      return series;
+    }),
+  update: publicProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string().min(1).optional(),
+        brandId: z.string().uuid().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      const [updatedSeries] = await db
+        .update(productSeries)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(productSeries.id, id))
+        .returning();
+      return updatedSeries;
+    }),
+  remove: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const { id } = input;
+      const [deletedSeries] = await db
+        .delete(productSeries)
+        .where(eq(productSeries.id, id))
+        .returning();
+      return deletedSeries;
+    }),
   getMany: publicProcedure
     .input(
       z.object({

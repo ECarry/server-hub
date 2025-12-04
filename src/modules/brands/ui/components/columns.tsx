@@ -1,9 +1,12 @@
+/* eslint-disable @next/next/no-img-element */
 import { brandsSelectSchema } from "@/db/schema";
 import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { z } from "zod";
 import { Badge } from "@/components/ui/badge";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
+import { DeleteBrandButton } from "./delete-brand-button";
+import { EditBrandButton } from "./edit-brand-button";
 
 export const columns: ColumnDef<z.infer<typeof brandsSelectSchema>>[] = [
   {
@@ -35,13 +38,25 @@ export const columns: ColumnDef<z.infer<typeof brandsSelectSchema>>[] = [
   {
     accessorKey: "logoImageKey",
     header: "Logo",
-    cell: ({ row }) => <div className="flex items-center justify-center w-10 h-10"><img src={keyToUrl(row.original.logoImageKey) ?? ""} alt="brand logo" className="object-cover" /></div>,
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center w-10 h-10">
+        <img
+          src={keyToUrl(row.original.logoImageKey) ?? ""}
+          alt="brand logo"
+          className="object-cover"
+        />
+      </div>
+    ),
   },
   {
     accessorKey: "name",
     header: "Name",
     enableHiding: false,
-    cell: ({ row }) => <div className="flex items-center justify-center"><p>{row.original.name}</p></div>,
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center">
+        <p>{row.original.name}</p>
+      </div>
+    ),
   },
   {
     accessorKey: "fullName",
@@ -59,6 +74,17 @@ export const columns: ColumnDef<z.infer<typeof brandsSelectSchema>>[] = [
       <p className="text-muted-foreground px-1.5 truncate max-w-64">
         {row.original.description}
       </p>
+    ),
+    enableHiding: false,
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <EditBrandButton brandId={row.original.id} />
+        <DeleteBrandButton brandId={row.original.id} />
+      </div>
     ),
     enableHiding: false,
   },

@@ -7,7 +7,7 @@ import { useSeriesFilters } from "../../hooks/use-series-filters";
 import { DEFAULT_PAGE } from "@/constants";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { SeriesSearchFilter } from "./series-search-filter";
-import { SeriesCreateModal } from "./series-create-modal";
+import { SeriesModal } from "./series-modal";
 
 export const SeriesListHeader = () => {
   const [open, setOpen] = useState(false);
@@ -24,7 +24,7 @@ export const SeriesListHeader = () => {
 
   return (
     <>
-      <SeriesCreateModal open={open} onOpenChange={setOpen} />
+      <SeriesModal open={open} onOpenChange={setOpen} />
       <div className="py-4 px-4 md:px-8 flex flex-col gap-y-8">
         <div>
           <h1 className="text-2xl font-bold">Series</h1>

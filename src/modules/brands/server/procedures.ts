@@ -2,7 +2,7 @@ import { createTRPCRouter, adminProcedure } from "@/trpc/init";
 import { z } from "zod";
 import { db } from "@/db";
 import { brands } from "@/db/schema";
-import { ilike, count, desc } from "drizzle-orm";
+import { ilike, count, desc, eq } from "drizzle-orm";
 
 import {
   MIN_PAGE_SIZE,
@@ -24,6 +24,45 @@ export const brandsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const [newBrand] = await db.insert(brands).values(input).returning();
       return newBrand;
+    }),
+  getById: adminProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ input }) => {
+      const [brand] = await db
+        .select()
+        .from(brands)
+        .where(eq(brands.id, input.id))
+        .limit(1);
+      return brand;
+    }),
+  update: adminProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string().min(1).optional(),
+        fullName: z.string().optional(),
+        description: z.string().optional(),
+        logoImageKey: z.string().optional(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      const [updatedBrand] = await db
+        .update(brands)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(brands.id, id))
+        .returning();
+      return updatedBrand;
+    }),
+  remove: adminProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ input }) => {
+      const { id } = input;
+      const [deletedBrand] = await db
+        .delete(brands)
+        .where(eq(brands.id, id))
+        .returning();
+      return deletedBrand;
     }),
   getMany: adminProcedure
     .input(

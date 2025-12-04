@@ -25,10 +25,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ResponsiveModal } from "@/components/responsive-modal";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
+import { useEffect } from "react";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  seriesId?: string;
 }
 
 const formSchema = z.object({
@@ -38,7 +40,9 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const SeriesCreateModal = ({ open, onOpenChange }: Props) => {
+export const SeriesModal = ({ open, onOpenChange, seriesId }: Props) => {
+  const isEditMode = !!seriesId;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,12 +56,42 @@ export const SeriesCreateModal = ({ open, onOpenChange }: Props) => {
 
   const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
 
+  // Fetch existing series data if in edit mode
+  const { data: existingSeries } = useQuery({
+    ...trpc.series.getById.queryOptions({ id: seriesId! }),
+    enabled: isEditMode && open && !!seriesId,
+  });
+
+  // Update form when existing series data is loaded
+  useEffect(() => {
+    if (existingSeries && isEditMode) {
+      form.reset({
+        name: existingSeries.name || "",
+        brandId: existingSeries.brandId || "",
+      });
+    }
+  }, [existingSeries, isEditMode, form]);
+
   const create = useMutation(
     trpc.series.create.mutationOptions({
       onSuccess: async () => {
         toast.success("Series created successfully");
         handleClose();
-        form.reset();
+        await queryClient.invalidateQueries(
+          trpc.series.getMany.queryOptions({})
+        );
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
+
+  const update = useMutation(
+    trpc.series.update.mutationOptions({
+      onSuccess: async () => {
+        toast.success("Series updated successfully");
+        handleClose();
         await queryClient.invalidateQueries(
           trpc.series.getMany.queryOptions({})
         );
@@ -69,7 +103,11 @@ export const SeriesCreateModal = ({ open, onOpenChange }: Props) => {
   );
 
   const onSubmit = (data: FormValues) => {
-    create.mutate(data);
+    if (isEditMode && seriesId) {
+      update.mutate({ id: seriesId, ...data });
+    } else {
+      create.mutate(data);
+    }
   };
 
   const handleClose = () => {
@@ -81,7 +119,7 @@ export const SeriesCreateModal = ({ open, onOpenChange }: Props) => {
     <ResponsiveModal
       open={open}
       onOpenChange={handleClose}
-      title="Create a Series"
+      title={isEditMode ? "Edit Series" : "Create a Series"}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -134,8 +172,12 @@ export const SeriesCreateModal = ({ open, onOpenChange }: Props) => {
               </FormItem>
             )}
           />
-          <Button disabled={create.isPending} type="submit" className="w-full">
-            Create
+          <Button
+            disabled={create.isPending || update.isPending}
+            type="submit"
+            className="w-full"
+          >
+            {isEditMode ? "Update" : "Create"}
           </Button>
         </form>
       </Form>

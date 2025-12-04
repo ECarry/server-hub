@@ -3,6 +3,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SeriesGetMany } from "@/modules/series/types";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
+import { DeleteSeriesButton } from "./delete-series-button";
+import { EditSeriesButton } from "./edit-series-button";
 
 export const columns: ColumnDef<SeriesGetMany["items"][number]>[] = [
   {
@@ -43,13 +45,24 @@ export const columns: ColumnDef<SeriesGetMany["items"][number]>[] = [
             className="object-cover"
           />
         </div>
-        <p className="font-semibold">{row.original.name}</p>
+        <p className="font-semibold">{row.original.brandName}</p>
       </div>
     ),
   },
   {
     accessorKey: "name",
     header: "Name",
+    enableHiding: false,
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <EditSeriesButton seriesId={row.original.id} />
+        <DeleteSeriesButton seriesId={row.original.id} />
+      </div>
+    ),
     enableHiding: false,
   },
 ];

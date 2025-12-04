@@ -2,7 +2,7 @@
 "use client";
 
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,14 +18,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ResponsiveModal } from "@/components/responsive-modal";
 import { useFileUpload } from "@/modules/s3/hooks/use-file-upload";
-import { useRef, useState } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { Loader2, Upload, X } from "lucide-react";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { Textarea } from "@/components/ui/textarea";
+import { useWatch } from "react-hook-form";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  brandId?: string;
 }
 
 const formSchema = z.object({
@@ -37,7 +39,9 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const BrandCreateModal = ({ open, onOpenChange }: Props) => {
+export const BrandModal = ({ open, onOpenChange, brandId }: Props) => {
+  const isEditMode = !!brandId;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,17 +55,58 @@ export const BrandCreateModal = ({ open, onOpenChange }: Props) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [logoPreview, setLogoPreview] = useState<string>("");
 
   const { uploadFile, isUploading } = useFileUpload();
+
+  // Fetch existing brand data if in edit mode
+  const { data: existingBrand } = useQuery({
+    ...trpc.brands.getById.queryOptions({ id: brandId! }),
+    enabled: isEditMode && open && !!brandId,
+  });
+
+  // Update form when existing brand data is loaded
+  useEffect(() => {
+    if (existingBrand && isEditMode && open) {
+      form.reset({
+        name: existingBrand.name || "",
+        fullName: existingBrand.fullName || "",
+        description: existingBrand.description || "",
+        logoImageKey: existingBrand.logoImageKey || "",
+      });
+    }
+  }, [existingBrand, isEditMode, open, form]);
+
+  // Watch logoImageKey changes for preview using useWatch
+  const logoImageKey = useWatch({
+    control: form.control,
+    name: "logoImageKey",
+  });
+
+  // Compute logo preview from logoImageKey
+  const logoPreview = useMemo(() => {
+    return logoImageKey ? keyToUrl(logoImageKey) : "";
+  }, [logoImageKey]);
 
   const create = useMutation(
     trpc.brands.create.mutationOptions({
       onSuccess: async () => {
         toast.success("Brand created successfully");
         handleClose();
-        form.reset();
-        setLogoPreview("");
+        await queryClient.invalidateQueries(
+          trpc.brands.getMany.queryOptions({})
+        );
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
+  );
+
+  const update = useMutation(
+    trpc.brands.update.mutationOptions({
+      onSuccess: async () => {
+        toast.success("Brand updated successfully");
+        handleClose();
         await queryClient.invalidateQueries(
           trpc.brands.getMany.queryOptions({})
         );
@@ -80,10 +125,9 @@ export const BrandCreateModal = ({ open, onOpenChange }: Props) => {
 
       try {
         await uploadFile(file, {
-          folder: "brands",
+          folder: "logos",
           onSuccess: async (uploadedKey) => {
             form.setValue("logoImageKey", uploadedKey);
-            setLogoPreview(keyToUrl(uploadedKey));
           },
         });
       } catch (error) {
@@ -108,24 +152,26 @@ export const BrandCreateModal = ({ open, onOpenChange }: Props) => {
       }
     }
     form.setValue("logoImageKey", "");
-    setLogoPreview("");
   };
 
   const onSubmit = (data: FormValues) => {
-    create.mutate(data);
+    if (isEditMode && brandId) {
+      update.mutate({ id: brandId, ...data });
+    } else {
+      create.mutate(data);
+    }
   };
 
   const handleClose = () => {
     onOpenChange(false);
     form.reset();
-    setLogoPreview("");
   };
 
   return (
     <ResponsiveModal
       open={open}
       onOpenChange={handleClose}
-      title="Create a Brand"
+      title={isEditMode ? "Edit Brand" : "Create a Brand"}
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -235,8 +281,12 @@ export const BrandCreateModal = ({ open, onOpenChange }: Props) => {
               </FormItem>
             )}
           />
-          <Button disabled={create.isPending} type="submit" className="w-full">
-            Create
+          <Button
+            disabled={create.isPending || update.isPending}
+            type="submit"
+            className="w-full"
+          >
+            {isEditMode ? "Update" : "Create"}
           </Button>
         </form>
       </Form>
