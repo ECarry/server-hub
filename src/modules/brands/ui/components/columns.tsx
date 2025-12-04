@@ -82,7 +82,7 @@ export const columns: ColumnDef<z.infer<typeof brandsSelectSchema>>[] = [
     header: "Actions",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <EditBrandButton brandId={row.original.id} />
+        <EditBrandButton brand={row.original} />
         <DeleteBrandButton brandId={row.original.id} />
       </div>
     ),

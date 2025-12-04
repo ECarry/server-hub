@@ -2,7 +2,7 @@
 "use client";
 
 import { useTRPC } from "@/trpc/client";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +28,12 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   brandId?: string;
+  initialData?: {
+    name: string;
+    fullName?: string | null;
+    description?: string | null;
+    logoImageKey?: string | null;
+  };
 }
 
 const formSchema = z.object({
@@ -39,7 +45,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const BrandModal = ({ open, onOpenChange, brandId }: Props) => {
+export const BrandModal = ({ open, onOpenChange, brandId, initialData }: Props) => {
   const isEditMode = !!brandId;
 
   const form = useForm<FormValues>({
@@ -58,23 +64,17 @@ export const BrandModal = ({ open, onOpenChange, brandId }: Props) => {
 
   const { uploadFile, isUploading } = useFileUpload();
 
-  // Fetch existing brand data if in edit mode
-  const { data: existingBrand } = useQuery({
-    ...trpc.brands.getById.queryOptions({ id: brandId! }),
-    enabled: isEditMode && open && !!brandId,
-  });
-
-  // Update form when existing brand data is loaded
+  // Update form when modal opens with initial data
   useEffect(() => {
-    if (existingBrand && isEditMode && open) {
+    if (initialData && isEditMode && open) {
       form.reset({
-        name: existingBrand.name || "",
-        fullName: existingBrand.fullName || "",
-        description: existingBrand.description || "",
-        logoImageKey: existingBrand.logoImageKey || "",
+        name: initialData.name || "",
+        fullName: initialData.fullName || "",
+        description: initialData.description || "",
+        logoImageKey: initialData.logoImageKey || "",
       });
     }
-  }, [existingBrand, isEditMode, open, form]);
+  }, [initialData, isEditMode, open, form]);
 
   // Watch logoImageKey changes for preview using useWatch
   const logoImageKey = useWatch({

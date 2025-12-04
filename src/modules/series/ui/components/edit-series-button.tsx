@@ -4,17 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { SeriesModal } from "./series-modal";
+import { SeriesGetMany } from "@/modules/series/types";
 
 interface EditSeriesButtonProps {
-  seriesId: string;
+  series: SeriesGetMany["items"][number];
 }
 
-export const EditSeriesButton = ({ seriesId }: EditSeriesButtonProps) => {
+export const EditSeriesButton = ({ series }: EditSeriesButtonProps) => {
   const [editOpen, setEditOpen] = useState(false);
 
   return (
     <>
-      <SeriesModal open={editOpen} onOpenChange={setEditOpen} seriesId={seriesId} />
+      <SeriesModal
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        seriesId={series.id}
+        initialData={{
+          name: series.name,
+          brandId: series.brandId,
+        }}
+      />
       <Button
         type="button"
         variant="ghost"

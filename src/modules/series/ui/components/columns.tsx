@@ -59,7 +59,7 @@ export const columns: ColumnDef<SeriesGetMany["items"][number]>[] = [
     header: "Actions",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <EditSeriesButton seriesId={row.original.id} />
+        <EditSeriesButton series={row.original} />
         <DeleteSeriesButton seriesId={row.original.id} />
       </div>
     ),

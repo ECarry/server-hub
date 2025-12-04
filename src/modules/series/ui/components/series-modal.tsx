@@ -31,6 +31,10 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   seriesId?: string;
+  initialData?: {
+    name: string;
+    brandId: string;
+  };
 }
 
 const formSchema = z.object({
@@ -40,7 +44,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export const SeriesModal = ({ open, onOpenChange, seriesId }: Props) => {
+export const SeriesModal = ({ open, onOpenChange, seriesId, initialData }: Props) => {
   const isEditMode = !!seriesId;
 
   const form = useForm<FormValues>({
@@ -56,21 +60,15 @@ export const SeriesModal = ({ open, onOpenChange, seriesId }: Props) => {
 
   const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
 
-  // Fetch existing series data if in edit mode
-  const { data: existingSeries } = useQuery({
-    ...trpc.series.getById.queryOptions({ id: seriesId! }),
-    enabled: isEditMode && open && !!seriesId,
-  });
-
-  // Update form when existing series data is loaded
+  // Update form when modal opens with initial data
   useEffect(() => {
-    if (existingSeries && isEditMode) {
+    if (initialData && isEditMode && open) {
       form.reset({
-        name: existingSeries.name || "",
-        brandId: existingSeries.brandId || "",
+        name: initialData.name || "",
+        brandId: initialData.brandId || "",
       });
     }
-  }, [existingSeries, isEditMode, form]);
+  }, [initialData, isEditMode, open, form]);
 
   const create = useMutation(
     trpc.series.create.mutationOptions({
