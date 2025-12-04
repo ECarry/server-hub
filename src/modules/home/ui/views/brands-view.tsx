@@ -5,13 +5,15 @@ import { Settings2 } from "lucide-react";
 import { FilterCarousel } from "../components/filter-carousel";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useHomeFilters } from "../../hooks/use-home-filters";
 
 export const BrandsView = () => {
   const trpc = useTRPC()
   const { data } = useSuspenseQuery(trpc.home.getManyBrands.queryOptions())
+  const [filters, setFilters] = useHomeFilters()
 
   const onSelect = (value: string | null) => {
-    console.log(value)
+    setFilters({ brandId: value || "" })
   }
 
   return (
@@ -28,7 +30,7 @@ export const BrandsView = () => {
           <span>Filters</span>
         </div>
       </Button>
-      <FilterCarousel value={null} data={data} onSelect={onSelect} />
+      <FilterCarousel value={filters.brandId || null} data={data} onSelect={onSelect} />
     </div>
   )
 }

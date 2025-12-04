@@ -36,7 +36,7 @@ import {
   MoreHorizontal,
   Link as LinkIcon,
 } from "lucide-react";
-import { Product } from "../types";
+import { Product } from "../../types";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 
 export function ProductCard({ product }: { product: Product }) {

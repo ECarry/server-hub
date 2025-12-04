@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Brand } from "../types";
+import { Brand } from "../../types";
 
 
 interface FilterCarouselProps {
