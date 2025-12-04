@@ -2,17 +2,32 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getQueryClient, trpc } from "@/trpc/server";
-import { ProductsView, ProductsViewLoading } from "@/modules/home/ui/views/products-view";
-import { BrandsView, BrandsViewLoading } from "@/modules/home/ui/views/brands-view";
+import {
+  ProductsView,
+  ProductsViewLoading,
+} from "@/modules/home/ui/views/products-view";
+import {
+  BrandsView,
+  BrandsViewLoading,
+} from "@/modules/home/ui/views/brands-view";
+import { loadSearchParams } from "@/modules/home/params";
+import { SearchParams } from "nuqs/server";
 
-export default function Home() {
+type Props = {
+  searchParams: Promise<SearchParams>;
+};
+
+const page = async ({ searchParams }: Props) => {
+  const filters = await loadSearchParams(searchParams);
+
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(trpc.home.getManyProducts.queryOptions());
+  void queryClient.prefetchQuery(
+    trpc.home.getManyProducts.queryOptions({ ...filters })
+  );
   void queryClient.prefetchQuery(trpc.home.getManyBrands.queryOptions());
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-
       <div className="flex flex-col space-y-6">
         <div className="px-5 sm:px-6 md:px-8 lg:px-12 xl:px-20 space-y-6 pb-8">
           <h1 className="text-[44px] font-semibold">Discover</h1>
@@ -24,17 +39,16 @@ export default function Home() {
             </ErrorBoundary>
           </Suspense>
 
-
           {/* Products Card view */}
           <Suspense fallback={<ProductsViewLoading />}>
             <ErrorBoundary fallback={<p>Something went wrong</p>}>
               <ProductsView />
             </ErrorBoundary>
           </Suspense>
-
-
         </div>
       </div>
     </HydrationBoundary>
   );
-}
+};
+
+export default page;
