@@ -5,9 +5,11 @@ import {
   productsCategories,
   productSeries,
   productImage,
+  documents,
+  downloads,
 } from "@/db/schema";
 import { publicProcedure, createTRPCRouter } from "@/trpc/init";
-import { eq, desc, getTableColumns, inArray } from "drizzle-orm";
+import { eq, desc, getTableColumns, inArray, and } from "drizzle-orm";
 import { z } from "zod";
 
 export const homeRouter = createTRPCRouter({
@@ -75,4 +77,69 @@ export const homeRouter = createTRPCRouter({
     const brandsData = await db.select().from(brands);
     return brandsData;
   }),
+  getProductById: publicProcedure
+    .input(z.string().uuid())
+    .query(async ({ input }) => {
+      const [product, images, productDocuments, productDownloads] =
+        await Promise.all([
+          db
+            .select({
+              ...getTableColumns(products),
+              category: productsCategories.name,
+              brand: brands.name,
+              brandLogoKey: brands.logoImageKey,
+              series: productSeries.name,
+            })
+            .from(products)
+            .innerJoin(
+              productsCategories,
+              eq(products.categoryId, productsCategories.id)
+            )
+            .innerJoin(brands, eq(products.brandId, brands.id))
+            .leftJoin(productSeries, eq(products.seriesId, productSeries.id))
+            .where(
+              and(
+                eq(products.id, input),
+                inArray(products.visibility, ["public"])
+              )
+            )
+            .then((rows) => rows[0] || null),
+          db
+            .select()
+            .from(productImage)
+            .where(eq(productImage.productId, input))
+            .orderBy(productImage.createdAt),
+          db
+            .select()
+            .from(documents)
+            .where(
+              and(
+                eq(documents.productId, input),
+                eq(documents.visibility, "public")
+              )
+            )
+            .orderBy(desc(documents.createdAt)),
+          db
+            .select()
+            .from(downloads)
+            .where(
+              and(
+                eq(downloads.productId, input),
+                eq(downloads.visibility, "public")
+              )
+            )
+            .orderBy(desc(downloads.createdAt)),
+        ]);
+
+      if (!product) {
+        return null;
+      }
+
+      return {
+        ...product,
+        images,
+        documents: productDocuments,
+        downloads: productDownloads,
+      };
+    }),
 });

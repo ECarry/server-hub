@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ProductsGetManyOutput } from "@/modules/products/types";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import {
   IconDatabase,
@@ -12,6 +11,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import Image from "next/image";
 import { DeleteProductButton } from "./delete-product-button";
+import { ProductsGetManyOutput } from "../../types";
 
 export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
   {
@@ -45,13 +45,14 @@ export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
     header: "Brand",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <Image
-          src={keyToUrl(row.original.brandLogoKey || "")}
-          alt={row.original.brand}
-          width={24}
-          height={24}
-          className="object-contain"
-        />
+        <div className="size-6 relative">
+          <Image
+            src={keyToUrl(row.original.brandLogoKey || "")}
+            alt={row.original.brand}
+            fill
+            className="object-contain"
+          />
+        </div>
         <p>{row.original.brand}</p>
       </div>
     ),
