@@ -4,7 +4,7 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { FileText, Loader2, Trash2, Upload, Download } from "lucide-react";
+import { FileText, Loader2, Trash2, Upload, Download, Eye, EyeOff } from "lucide-react";
 import { useRef } from "react";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { format } from "date-fns";
@@ -31,6 +31,9 @@ export const ProductDocuments = ({ productId }: Props) => {
   );
   const removeDocumentation = useMutation(
     trpc.products.removeDocumentation.mutationOptions()
+  );
+  const updateDocumentation = useMutation(
+    trpc.products.updateDocumentation.mutationOptions()
   );
   const deleteFile = useMutation(trpc.s3.deleteFile.mutationOptions());
 
@@ -73,6 +76,21 @@ export const ProductDocuments = ({ productId }: Props) => {
     } catch (error) {
       console.error(error);
       toast.error("Failed to delete document");
+    }
+  };
+
+  const toggleVisibility = async (docId: string, currentVisibility: "public" | "private") => {
+    try {
+      const newVisibility = currentVisibility === "public" ? "private" : "public";
+      await updateDocumentation.mutateAsync({
+        id: docId,
+        visibility: newVisibility,
+      });
+      toast.success(`Document is now ${newVisibility}`);
+      refetch();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update visibility");
     }
   };
 
@@ -134,6 +152,19 @@ export const ProductDocuments = ({ productId }: Props) => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => toggleVisibility(doc.id, doc.visibility)}
+                title={doc.visibility === "public" ? "Make Private" : "Make Public"}
+              >
+                {doc.visibility === "public" ? (
+                  <Eye className="size-4 text-green-500" />
+                ) : (
+                  <EyeOff className="size-4 text-muted-foreground" />
+                )}
+              </Button>
               {doc.fileKey && (
                 <Button
                   type="button"

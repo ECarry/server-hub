@@ -12,6 +12,8 @@ import {
   documents,
   downloads,
   downloadsInsertSchema,
+  documentsUpdateSchema,
+  downloadsUpdateSchema,
 } from "@/db/schema";
 import { productInsertSchema, productUpdateSchema } from "@/modules/products/schemas";
 import { eq, desc, getTableColumns, ilike, count } from "drizzle-orm";
@@ -268,6 +270,27 @@ export const productsRouter = createTRPCRouter({
 
       return deletedDocumentation;
     }),
+  updateDocumentation: adminProcedure
+    .input(documentsUpdateSchema)
+    .mutation(async ({ input }) => {
+      const { id } = input;
+      if (!id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      const [updated] = await db
+        .update(documents)
+        .set({
+          ...input,
+          updatedAt: new Date(),
+        })
+        .where(eq(documents.id, id))
+        .returning();
+
+      return updated;
+    }),
   getDocumentations: adminProcedure
     .input(z.object({ productId: z.string().uuid() }))
     .query(async ({ input }) => {
@@ -334,5 +357,26 @@ export const productsRouter = createTRPCRouter({
         .returning();
 
       return deletedDownload;
+    }),
+  updateDownload: adminProcedure
+    .input(downloadsUpdateSchema)
+    .mutation(async ({ input }) => {
+      const { id } = input;
+      if (!id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+        });
+      }
+
+      const [updated] = await db
+        .update(downloads)
+        .set({
+          ...input,
+          updatedAt: new Date(),
+        })
+        .where(eq(downloads.id, id))
+        .returning();
+
+      return updated;
     }),
 });

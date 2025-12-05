@@ -4,7 +4,7 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Download, Loader2, Trash2, Upload } from "lucide-react";
+import { Download, Loader2, Trash2, Upload, Eye, EyeOff } from "lucide-react";
 import { useRef } from "react";
 import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import { format } from "date-fns";
@@ -38,6 +38,9 @@ export const ProductDownloads = ({ productId }: Props) => {
   );
   const removeDownload = useMutation(
     trpc.products.removeDownload.mutationOptions()
+  );
+  const updateDownload = useMutation(
+    trpc.products.updateDownload.mutationOptions()
   );
   const deleteFile = useMutation(trpc.s3.deleteFile.mutationOptions());
 
@@ -80,6 +83,21 @@ export const ProductDownloads = ({ productId }: Props) => {
     } catch (error) {
       console.error(error);
       toast.error("Failed to delete download");
+    }
+  };
+
+  const toggleVisibility = async (downloadId: string, currentVisibility: "public" | "private") => {
+    try {
+      const newVisibility = currentVisibility === "public" ? "private" : "public";
+      await updateDownload.mutateAsync({
+        id: downloadId,
+        visibility: newVisibility,
+      });
+      toast.success(`Download is now ${newVisibility}`);
+      refetch();
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update visibility");
     }
   };
 
@@ -197,6 +215,22 @@ export const ProductDownloads = ({ productId }: Props) => {
                   </AccordionTrigger>
 
                   <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleVisibility(dl.id, dl.visibility)
+                      }}
+                      title={dl.visibility === "public" ? "Make Private" : "Make Public"}
+                    >
+                      {dl.visibility === "public" ? (
+                        <Eye className="size-4 text-green-500" />
+                      ) : (
+                        <EyeOff className="size-4 text-muted-foreground" />
+                      )}
+                    </Button>
                     {dl.fileKey && (
                       <a
                         href={keyToUrl(dl.fileKey)}
