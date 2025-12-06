@@ -16,8 +16,19 @@ export const ProductsView = () => {
     })
   );
 
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <p className="text-xl font-semibold mb-2">No products found</p>
+        <p className="text-muted-foreground">
+          Try adjusting your filters or search criteria
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 content-start gap-x-6 gap-y-10">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 content-start gap-x-5 gap-y-8 md:gap-x-6 md:gap-y-12">
       {data.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
@@ -27,10 +38,10 @@ export const ProductsView = () => {
 
 export const ProductsViewLoading = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 content-start gap-x-6 gap-y-10">
-      {Array.from({ length: 10 }).map((_, index) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 content-start gap-x-5 gap-y-8 md:gap-x-6 md:gap-y-12">
+      {Array.from({ length: 15 }).map((_, index) => (
         <div key={index} className="space-y-3">
-          <Skeleton className="h-[300px] w-full rounded-[28px]" />
+          <Skeleton className="h-[280px] md:h-[320px] w-full rounded-[24px]" />
           <div className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
             <div className="flex-1 space-y-2">

@@ -27,10 +27,10 @@ const AuthButton = () => {
     return (
       <div className="hidden lg:flex flex-row items-center gap-3">
         <Button variant="ghost" size="lg" asChild>
-          <Link href="/login">Log in</Link>
+          <Link href="/sign-in">Log in</Link>
         </Button>
         <Button variant="default" size="lg" asChild>
-          <Link href="/login">Create free account</Link>
+          <Link href="/sign-up">Create free account</Link>
         </Button>
       </div>
     );

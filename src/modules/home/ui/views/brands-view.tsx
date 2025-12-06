@@ -1,56 +1,60 @@
-'use client'
+"use client";
 
 import { Button } from "@/components/ui/button";
-import { Settings2 } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { FilterCarousel } from "../components/filter-carousel";
 import { useTRPC } from "@/trpc/client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useHomeFilters } from "../../hooks/use-home-filters";
 
 export const BrandsView = () => {
-  const trpc = useTRPC()
-  const { data } = useSuspenseQuery(trpc.home.getManyBrands.queryOptions())
-  const [filters, setFilters] = useHomeFilters()
+  const trpc = useTRPC();
+  const { data } = useSuspenseQuery(trpc.home.getManyBrands.queryOptions());
+  const [filters, setFilters] = useHomeFilters();
 
   const onSelect = (value: string | null) => {
-    setFilters({ brandId: value || "" })
-  }
+    setFilters({ brandId: value || "" });
+  };
 
   return (
-    <div className="flex items-center gap-x-2">
+    <div className="flex items-center gap-x-3">
       <Button
         size="lg"
         variant="secondary"
-        onClick={() => { }}
-        className="max-md:hidden rounded-full"
+        onClick={() => {}}
+        className="max-md:hidden rounded-xl h-11 px-5 font-semibold"
         asChild
       >
         <div className="flex items-center gap-x-2">
-          <Settings2 className="size-4" />
+          <SlidersHorizontal className="size-4" />
           <span>Filters</span>
         </div>
       </Button>
-      <FilterCarousel value={filters.brandId || null} data={data} onSelect={onSelect} />
+      <FilterCarousel
+        value={filters.brandId || null}
+        data={data}
+        onSelect={onSelect}
+      />
     </div>
-  )
-}
+  );
+};
 
 export const BrandsViewLoading = () => {
   return (
-    <div className="flex items-center gap-x-2">
+    <div className="flex items-center gap-x-3">
       <Button
         size="lg"
         variant="secondary"
-        onClick={() => { }}
-        className="max-md:hidden rounded-full"
+        onClick={() => {}}
+        className="max-md:hidden rounded-xl h-11 px-5 font-semibold"
         asChild
       >
         <div className="flex items-center gap-x-2">
-          <Settings2 className="size-4" />
+          <SlidersHorizontal className="size-4" />
           <span>Filters</span>
         </div>
       </Button>
-      <FilterCarousel value={null} data={[]} onSelect={() => { }} isLoading />
+      <FilterCarousel value={null} data={[]} onSelect={() => {}} isLoading />
     </div>
-  )
-}
+  );
+};

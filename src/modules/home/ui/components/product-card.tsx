@@ -46,7 +46,6 @@ export function ProductCard({ product }: { product: Product }) {
   const [scrollPrev, setScrollPrev] = React.useState<boolean>(false);
   const [scrollNext, setScrollNext] = React.useState<boolean>(true);
 
-
   React.useEffect(() => {
     if (!api) {
       return;
@@ -66,7 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="group relative flex flex-col gap-y-3 md:gap-y-4">
-      <div className="relative rounded-[28px] overflow-hidden w-full hidden md:block md:bg-foreground/4 md:group-hover:bg-foreground/6 transition duration-300 md:pt-6 md:pb-7 h-[300px]">
+      <div className="relative rounded-[24px] overflow-hidden w-full hidden md:block md:bg-foreground/3 md:hover:bg-foreground/6 transition-all duration-300 ease-out md:pt-6 md:pb-7 h-[280px] md:h-[320px]">
         <Carousel
           setApi={setApi}
           className="m-0"
@@ -81,12 +80,12 @@ export function ProductCard({ product }: { product: Product }) {
                 key={index}
                 className="px-7 flex items-center justify-center"
               >
-                <div className="relative h-[283px] w-full">
+                <div className="relative h-[250px] md:h-[290px] w-full">
                   <Image
                     src={keyToUrl(image.imageKey)}
                     alt="Product Image"
                     fill
-                    className="rounded-3xl object-contain"
+                    className="rounded-[20px] object-contain"
                   />
                 </div>
               </CarouselItem>

@@ -30,24 +30,32 @@ const page = async ({ searchParams }: Props) => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="flex flex-col space-y-6">
-        <div className="px-5 sm:px-6 md:px-8 lg:px-12 xl:px-20 space-y-6 pb-8">
-          <h1 className="text-[44px] font-semibold">Discover</h1>
-
-          {/* Brands view */}
-          <Suspense fallback={<BrandsViewLoading />}>
-            <ErrorBoundary fallback={<p>Something went wrong</p>}>
-              <BrandsView />
-            </ErrorBoundary>
-          </Suspense>
-
-          {/* Products Card view */}
-          <Suspense fallback={<ProductsViewLoading />}>
-            <ErrorBoundary fallback={<p>Something went wrong</p>}>
-              <ProductsView />
-            </ErrorBoundary>
-          </Suspense>
+      {/* Hero Section */}
+      <div className="px-5 sm:px-6 md:px-8 lg:px-12 xl:px-20 pt-8 md:pt-12 pb-6">
+        <div className="max-w-4xl">
+          <h1 className="text-[48px] md:text-[64px] font-bold leading-tight tracking-tight mb-4">
+            Discover
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground font-normal">
+            Browse thousands of mobile and web app designs for inspiration
+          </p>
         </div>
+      </div>
+
+      <div className="px-5 sm:px-6 md:px-8 lg:px-12 xl:px-20 space-y-8 pb-16">
+        {/* Brands Filter */}
+        <Suspense fallback={<BrandsViewLoading />}>
+          <ErrorBoundary fallback={<p>Something went wrong</p>}>
+            <BrandsView />
+          </ErrorBoundary>
+        </Suspense>
+
+        {/* Products Grid */}
+        <Suspense fallback={<ProductsViewLoading />}>
+          <ErrorBoundary fallback={<p>Something went wrong</p>}>
+            <ProductsView />
+          </ErrorBoundary>
+        </Suspense>
       </div>
     </HydrationBoundary>
   );
