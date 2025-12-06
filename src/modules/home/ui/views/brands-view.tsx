@@ -17,12 +17,12 @@ export const BrandsView = () => {
   };
 
   return (
-    <div className="flex items-center gap-x-3">
+    <div className="flex items-center gap-x-3 overflow-hidden">
       <Button
         size="lg"
         variant="secondary"
         onClick={() => {}}
-        className="max-md:hidden rounded-xl h-11 px-5 font-semibold"
+        className="max-md:hidden rounded-xl h-11 px-5 font-semibold shrink-0"
         asChild
       >
         <div className="flex items-center gap-x-2">
@@ -30,23 +30,25 @@ export const BrandsView = () => {
           <span>Filters</span>
         </div>
       </Button>
-      <FilterCarousel
-        value={filters.brandId || null}
-        data={data}
-        onSelect={onSelect}
-      />
+      <div className="flex-1 min-w-0">
+        <FilterCarousel
+          value={filters.brandId || null}
+          data={data}
+          onSelect={onSelect}
+        />
+      </div>
     </div>
   );
 };
 
 export const BrandsViewLoading = () => {
   return (
-    <div className="flex items-center gap-x-3">
+    <div className="flex items-center gap-x-3 overflow-hidden">
       <Button
         size="lg"
         variant="secondary"
         onClick={() => {}}
-        className="max-md:hidden rounded-xl h-11 px-5 font-semibold"
+        className="max-md:hidden rounded-xl h-11 px-5 font-semibold shrink-0"
         asChild
       >
         <div className="flex items-center gap-x-2">
@@ -54,7 +56,9 @@ export const BrandsViewLoading = () => {
           <span>Filters</span>
         </div>
       </Button>
-      <FilterCarousel value={null} data={[]} onSelect={() => {}} isLoading />
+      <div className="flex-1 min-w-0">
+        <FilterCarousel value={null} data={[]} onSelect={() => {}} isLoading />
+      </div>
     </div>
   );
 };

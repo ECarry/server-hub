@@ -6,6 +6,7 @@ import { TRPCReactProvider } from "@/trpc/client";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TailwindIndicator } from "@/components/tailwind-indicator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
             <TRPCReactProvider>
               {children}
               <Toaster />
+              <TailwindIndicator />
             </TRPCReactProvider>
           </NuqsAdapter>
         </ThemeProvider>

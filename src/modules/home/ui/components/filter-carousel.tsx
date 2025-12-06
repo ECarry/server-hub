@@ -15,7 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Brand } from "../../types";
 
-
 interface FilterCarouselProps {
   value?: string | null;
   isLoading?: boolean;
@@ -50,7 +49,7 @@ export const FilterCarousel = ({
       {/* Left fade  */}
       <div
         className={cn(
-          "absolute left-12 top-0 bottom-0 w-12 z-10 bg-linear-to-r from-white to-transparent pointer-events-none",
+          "absolute left-8 sm:left-12 top-0 bottom-0 w-8 sm:w-12 z-10 bg-linear-to-r from-white to-transparent dark:from-background pointer-events-none",
           current === 1 && "hidden"
         )}
       />
@@ -58,7 +57,7 @@ export const FilterCarousel = ({
       {/* Right fade */}
       <div
         className={cn(
-          "absolute right-12 top-0 bottom-0 w-12 z-10 bg-linear-to-l from-white to-transparent pointer-events-none",
+          "absolute right-8 sm:right-12 top-0 bottom-0 w-8 sm:w-12 z-10 bg-linear-to-l from-white dark:from-background to-transparent pointer-events-none",
           current === count && "hidden"
         )}
       />
@@ -69,7 +68,7 @@ export const FilterCarousel = ({
           align: "start",
           dragFree: true,
         }}
-        className="w-full px-12"
+        className="w-full px-8 sm:px-12"
       >
         <CarouselContent className="-ml-3">
           {!isLoading && (
@@ -111,8 +110,8 @@ export const FilterCarousel = ({
               </CarouselItem>
             ))}
         </CarouselContent>
-        <CarouselPrevious className="left-0 z-20" />
-        <CarouselNext className="right-0 z-20" />
+        <CarouselPrevious className="left-0 z-20 h-8 w-8 sm:h-9 sm:w-9" />
+        <CarouselNext className="right-0 z-20 h-8 w-8 sm:h-9 sm:w-9" />
       </Carousel>
     </div>
   );
