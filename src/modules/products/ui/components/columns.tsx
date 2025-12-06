@@ -4,14 +4,17 @@ import { keyToUrl } from "@/modules/s3/lib/key-to-url";
 import {
   IconDatabase,
   IconNetwork,
-  IconPointFilled,
   IconServer,
+  IconEyeClosed,
+  IconEdit,
 } from "@tabler/icons-react";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import Image from "next/image";
 import { DeleteProductButton } from "./delete-product-button";
 import { ProductsGetManyOutput } from "../../types";
+import { BadgeCheckIcon } from "lucide-react";
+import { Activity } from "react";
 
 export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
   {
@@ -109,12 +112,38 @@ export const columns: ColumnDef<ProductsGetManyOutput["items"][number]>[] = [
   {
     accessorKey: "visibility",
     header: "Visibility",
-    cell: ({ row }) => (
-      <Badge className="px-1.5 capitalize">
-        <IconPointFilled />
-        {row.original.visibility}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const visibility = row.original.visibility;
+
+      return (
+        <>
+          <Activity mode={visibility === "draft" ? "visible" : "hidden"}>
+            <Badge>
+              <IconEdit />
+              Draft
+            </Badge>
+          </Activity>
+          <Activity mode={visibility === "private" ? "visible" : "hidden"}>
+            <Badge
+              variant="secondary"
+              className="bg-rose-500 text-white dark:bg-rose-600"
+            >
+              <IconEyeClosed />
+              Private
+            </Badge>
+          </Activity>
+          <Activity mode={visibility === "public" ? "visible" : "hidden"}>
+            <Badge
+              variant="secondary"
+              className="bg-blue-500 text-white dark:bg-blue-600"
+            >
+              <BadgeCheckIcon />
+              Public
+            </Badge>
+          </Activity>
+        </>
+      );
+    },
     enableHiding: false,
   },
   {

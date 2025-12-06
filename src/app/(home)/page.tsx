@@ -37,7 +37,7 @@ const page = async ({ searchParams }: Props) => {
             Discover
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground font-normal">
-            Browse thousands of mobile and web app designs for inspiration
+            Browse servers storages & networks
           </p>
         </div>
       </div>
