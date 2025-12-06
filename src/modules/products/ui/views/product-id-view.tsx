@@ -76,6 +76,9 @@ export const ProductIdView = ({ productId }: Props) => {
       generation: product.generation || undefined,
       description: product.description || undefined,
       visibility: product.visibility,
+      defaultIp: product.defaultIp || undefined,
+      defaultUsername: product.defaultUsername || undefined,
+      defaultPassword: product.defaultPassword || undefined,
     },
   });
 
@@ -352,6 +355,63 @@ export const ProductIdView = ({ productId }: Props) => {
                           </SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="border p-6 rounded-lg space-y-6 bg-card">
+                <h3 className="text-lg font-semibold">Management Defaults</h3>
+                <p className="text-sm text-muted-foreground -mt-4">
+                  Default credentials for device management
+                </p>
+
+                <FormField
+                  control={form.control}
+                  name="defaultIp"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Default IP Address</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="192.168.1.1"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="defaultUsername"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Default Username</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="admin"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="defaultPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Default Password</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value || ""} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

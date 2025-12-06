@@ -10,7 +10,6 @@ import {
   foreignKey,
   primaryKey,
   uniqueIndex,
-  jsonb,
 } from "drizzle-orm/pg-core";
 import {
   createInsertSchema,
@@ -249,8 +248,9 @@ export const products = pgTable("products", {
   generation: text("generation"),
   description: text("description"),
   visibility: ProductVisibility("visibility").default("draft").notNull(),
-  specifications: jsonb("specifications"),
-  managementDefaults: jsonb("management_defaults"), // Stores default IP, username, password
+  defaultIp: text("default_ip"),
+  defaultUsername: text("default_username"),
+  defaultPassword: text("default_password"),
   releaseDate: timestamp("release_date"),
   eolDate: timestamp("eol_date"),
   brandId: uuid("brand_id")

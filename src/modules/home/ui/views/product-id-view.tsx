@@ -43,27 +43,28 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
         <div className="rounded-3xl overflow-hidden bg-muted/30 p-4 md:p-8 flex items-center justify-center">
           <Carousel className="w-full max-w-md">
             <CarouselContent>
-              {((product.images?.length ? product.images : [{ imageKey: null } as const])).map(
-                (image, index) => (
-                  <CarouselItem key={index} className="flex justify-center">
-                    <div className="relative w-full aspect-square">
-                      {image.imageKey ? (
-                        <Image
-                          src={keyToUrl(image.imageKey) ?? ""}
-                          alt={product.model}
-                          fill
-                          className="object-contain"
-                          priority={index === 0}
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full w-full bg-muted rounded-xl">
-                          <span className="text-muted-foreground">No Image</span>
-                        </div>
-                      )}
-                    </div>
-                  </CarouselItem>
-                )
-              )}
+              {(product.images?.length
+                ? product.images
+                : [{ imageKey: null } as const]
+              ).map((image, index) => (
+                <CarouselItem key={index} className="flex justify-center">
+                  <div className="relative w-full aspect-square">
+                    {image.imageKey ? (
+                      <Image
+                        src={keyToUrl(image.imageKey) ?? ""}
+                        alt={product.model}
+                        fill
+                        className="object-contain"
+                        priority={index === 0}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full w-full bg-muted rounded-xl">
+                        <span className="text-muted-foreground">No Image</span>
+                      </div>
+                    )}
+                  </div>
+                </CarouselItem>
+              ))}
             </CarouselContent>
             {product.images && product.images.length > 1 && (
               <>
@@ -90,13 +91,16 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
                 <h1 className="text-3xl font-bold">{product.model}</h1>
                 <div className="text-muted-foreground flex items-center gap-2">
                   {product.brand} {product.series}
-                  {product.generation && <Badge variant="outline">{product.generation}</Badge>}
+                  {product.generation && (
+                    <Badge variant="outline">{product.generation}</Badge>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="text-lg">
-              <span className="font-semibold">Category: </span> {product.category}
+              <span className="font-semibold">Category: </span>{" "}
+              {product.category}
             </div>
 
             {product.description && (
@@ -108,35 +112,26 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Release: {product.releaseDate ? format(new Date(product.releaseDate), "PP") : "N/A"}</span>
+                <span>
+                  Release:{" "}
+                  {product.releaseDate
+                    ? format(new Date(product.releaseDate), "PP")
+                    : "N/A"}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <HardDrive className="h-4 w-4 text-muted-foreground" />
-                <span>EOL: {product.eolDate ? format(new Date(product.eolDate), "PP") : "Active"}</span>
+                <span>
+                  EOL:{" "}
+                  {product.eolDate
+                    ? format(new Date(product.eolDate), "PP")
+                    : "Active"}
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Specifications Section */}
-      {!!product.specifications && typeof product.specifications === 'object' && Object.keys(product.specifications).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Specifications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-              {Object.entries(product.specifications as Record<string, string | number>).map(([key, value]) => (
-                <div key={key} className="flex flex-col">
-                  <dt className="text-sm font-medium text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</dt>
-                  <dd className="text-base font-medium">{String(value)}</dd>
-                </div>
-              ))}
-            </dl>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Bottom Section: Documentation & Downloads */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -151,17 +146,27 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
             {product.documents && product.documents.length > 0 ? (
               <ul className="space-y-3">
                 {product.documents.map((doc) => (
-                  <li key={doc.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                  <li
+                    key={doc.id}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                  >
                     <div className="flex items-center gap-3 overflow-hidden">
                       <FileText className="h-8 w-8 text-primary/80 shrink-0" />
                       <div className="min-w-0">
                         <p className="font-medium truncate">{doc.name}</p>
-                        <p className="text-xs text-muted-foreground">{doc.fileType} • {doc.fileSize} • {doc.version ? `v${doc.version}` : ""}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.fileType} • {doc.fileSize} •{" "}
+                          {doc.version ? `v${doc.version}` : ""}
+                        </p>
                       </div>
                     </div>
                     {/* Add download/view button based on fileKey/visibility? Assuming fileKey implies download */}
                     <Button variant="ghost" size="icon" asChild>
-                      <a href={keyToUrl(doc.fileKey)} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={keyToUrl(doc.fileKey)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <Download className="h-4 w-4" />
                       </a>
                     </Button>
@@ -169,7 +174,9 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground text-sm">No documentation available.</p>
+              <p className="text-muted-foreground text-sm">
+                No documentation available.
+              </p>
             )}
           </CardContent>
         </Card>
@@ -185,7 +192,10 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
             {product.downloads && product.downloads.length > 0 ? (
               <ul className="space-y-3">
                 {product.downloads.map((dl) => (
-                  <li key={dl.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+                  <li
+                    key={dl.id}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                  >
                     <div className="flex items-center gap-3 overflow-hidden">
                       <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <Download className="h-4 w-4 text-primary" />
@@ -193,12 +203,19 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
                       <div className="min-w-0">
                         <p className="font-medium truncate">{dl.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {dl.operatingSystem ? `${dl.operatingSystem}` : "All OS"} • {dl.fileType} • {dl.fileSize}
+                          {dl.operatingSystem
+                            ? `${dl.operatingSystem}`
+                            : "All OS"}{" "}
+                          • {dl.fileType} • {dl.fileSize}
                         </p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" asChild>
-                      <a href={keyToUrl(dl.fileKey)} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={keyToUrl(dl.fileKey)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <Download className="h-4 w-4" />
                       </a>
                     </Button>
@@ -206,7 +223,9 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
                 ))}
               </ul>
             ) : (
-              <p className="text-muted-foreground text-sm">No downloads available.</p>
+              <p className="text-muted-foreground text-sm">
+                No downloads available.
+              </p>
             )}
           </CardContent>
         </Card>
@@ -231,5 +250,5 @@ export const ProductIdViewLoading = () => {
         <div className="h-64 bg-muted animate-pulse rounded-xl" />
       </div>
     </div>
-  )
-}
+  );
+};

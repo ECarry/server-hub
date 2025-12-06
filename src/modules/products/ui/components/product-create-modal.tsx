@@ -51,7 +51,9 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
       description: "",
       seriesId: undefined,
       specifications: undefined,
-      managementDefaults: undefined,
+      defaultIp: "",
+      defaultUsername: "",
+      defaultPassword: "",
       releaseDate: undefined,
       eolDate: undefined,
       visibility: undefined,
@@ -269,6 +271,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
               </FormItem>
             )}
           />
+
           <Button disabled={create.isPending} type="submit" className="w-full">
             Create
           </Button>
