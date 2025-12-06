@@ -28,7 +28,7 @@ export const ProductsView = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 content-start gap-x-5 gap-y-8 md:gap-x-6 md:gap-y-12">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 content-start gap-x-5 gap-y-8 md:gap-x-6 md:gap-y-12">
       {data.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
@@ -38,7 +38,7 @@ export const ProductsView = () => {
 
 export const ProductsViewLoading = () => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 content-start gap-x-5 gap-y-8 md:gap-x-6 md:gap-y-12">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 content-start gap-x-5 gap-y-8 md:gap-x-6 md:gap-y-12">
       {Array.from({ length: 15 }).map((_, index) => (
         <div key={index} className="space-y-3">
           <Skeleton className="h-[280px] md:h-[320px] w-full rounded-[24px]" />

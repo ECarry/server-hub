@@ -64,8 +64,8 @@ export function ProductCard({ product }: { product: Product }) {
   }, [api]);
 
   return (
-    <div className="group relative flex flex-col gap-y-3 md:gap-y-4">
-      <div className="relative rounded-[24px] overflow-hidden w-full hidden md:block md:bg-foreground/3 md:hover:bg-foreground/6 transition-all duration-300 ease-out md:pt-6 md:pb-7 h-[280px] md:h-[320px]">
+    <div className="group relative flex flex-col gap-y-4">
+      <div className="relative rounded-[24px] overflow-hidden w-full bg-foreground/3 hover:bg-foreground/6 transition-all duration-300 ease-out pt-6 pb-7 h-[280px] md:h-[320px]">
         <Carousel
           setApi={setApi}
           className="m-0"
