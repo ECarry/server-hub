@@ -13,7 +13,15 @@ import {
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Download, Calendar, HardDrive } from "lucide-react";
+import {
+  FileText,
+  Download,
+  Calendar,
+  HardDrive,
+  Server,
+  User,
+  Key,
+} from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 
@@ -107,6 +115,32 @@ export const ProductIdView = ({ productId }: ProductIdViewProps) => {
               <p className="text-muted-foreground leading-relaxed">
                 {product.description}
               </p>
+            )}
+
+            {/* Management Defaults */}
+            {(product.defaultIp ||
+              product.defaultUsername ||
+              product.defaultPassword) && (
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {product.defaultIp && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Server className="h-4 w-4 text-muted-foreground" />
+                    <span>IP: {product.defaultIp}</span>
+                  </div>
+                )}
+                {product.defaultUsername && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span>Username: {product.defaultUsername}</span>
+                  </div>
+                )}
+                {product.defaultPassword && (
+                  <div className="flex items-center gap-2 text-sm col-span-2">
+                    <Key className="h-4 w-4 text-muted-foreground" />
+                    <span>Password: {product.defaultPassword}</span>
+                  </div>
+                )}
+              </div>
             )}
 
             <div className="grid grid-cols-2 gap-4 mt-4">

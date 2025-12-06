@@ -64,6 +64,10 @@ export const brandsRouter = createTRPCRouter({
         .returning();
       return deletedBrand;
     }),
+  getAll: adminProcedure.query(async () => {
+    const data = await db.select().from(brands);
+    return data;
+  }),
   getMany: adminProcedure
     .input(
       z.object({

@@ -6,6 +6,7 @@ import { useTRPC } from "@/trpc/client";
 import { format, formatDistanceToNow } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo, useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -53,9 +54,7 @@ export const ProductIdView = ({ productId }: Props) => {
       id: productId,
     })
   );
-  const { data: brands } = useSuspenseQuery(
-    trpc.brands.getMany.queryOptions({})
-  );
+  const { data: brands } = useSuspenseQuery(trpc.brands.getAll.queryOptions());
   const { data: series } = useSuspenseQuery(
     trpc.series.getMany.queryOptions({})
   );
@@ -81,6 +80,29 @@ export const ProductIdView = ({ productId }: Props) => {
       defaultPassword: product.defaultPassword || undefined,
     },
   });
+
+  // Watch brandId to filter series
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const selectedBrandId = form.watch("brandId");
+
+  // Filter series based on selected brand
+  const filteredSeries = useMemo(() => {
+    if (!selectedBrandId || !series?.items) return [];
+    return series.items.filter((s) => s.brandId === selectedBrandId);
+  }, [selectedBrandId, series?.items]);
+
+  // Reset seriesId when brand changes and current series doesn't belong to new brand
+  useEffect(() => {
+    const currentSeriesId = form.getValues("seriesId");
+    if (currentSeriesId && selectedBrandId) {
+      const seriesBelongsToBrand = filteredSeries.some(
+        (s) => s.id === currentSeriesId
+      );
+      if (!seriesBelongsToBrand) {
+        form.setValue("seriesId", undefined);
+      }
+    }
+  }, [selectedBrandId, filteredSeries, form]);
 
   const onSubmit = (values: ProductUpdateInput) => {
     updateProduct.mutate(values);
@@ -227,7 +249,7 @@ export const ProductIdView = ({ productId }: Props) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {brands?.items.map((brand) => (
+                          {brands.map((brand) => (
                             <SelectItem key={brand.id} value={brand.id}>
                               <div className="flex items-center gap-2">
                                 {brand.logoImageKey && (
@@ -257,16 +279,34 @@ export const ProductIdView = ({ productId }: Props) => {
                     <FormItem>
                       <FormLabel>Series</FormLabel>
                       <Select
+                        key={selectedBrandId}
                         onValueChange={field.onChange}
-                        defaultValue={field.value || undefined}
+                        value={
+                          filteredSeries.length === 0
+                            ? undefined
+                            : field.value || undefined
+                        }
+                        disabled={
+                          !selectedBrandId || filteredSeries.length === 0
+                        }
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a series" />
+                            {!selectedBrandId ? (
+                              <span className="text-muted-foreground">
+                                Select a brand first
+                              </span>
+                            ) : filteredSeries.length === 0 ? (
+                              <span className="text-muted-foreground">
+                                No series available
+                              </span>
+                            ) : (
+                              <SelectValue placeholder="Select a series" />
+                            )}
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {series?.items.map((s) => (
+                          {filteredSeries.map((s) => (
                             <SelectItem key={s.id} value={s.id}>
                               {s.name}
                             </SelectItem>

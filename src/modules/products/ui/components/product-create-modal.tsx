@@ -63,7 +63,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const { data: brands } = useQuery(trpc.brands.getMany.queryOptions({}));
+  const { data: brands } = useQuery(trpc.brands.getAll.queryOptions());
   const { data: series } = useQuery(trpc.series.getMany.queryOptions({}));
   const { data: categories } = useQuery(
     trpc.products.getCategories.queryOptions()
@@ -120,6 +120,8 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
                     onValueChange={(value) => {
                       field.onChange(value);
                       setSelectedBrandId(value);
+                      // Clear series when brand changes
+                      form.setValue("seriesId", undefined);
                     }}
                     value={field.value}
                   >
@@ -129,7 +131,7 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="w-full">
-                      {brands?.items.map((brand) => (
+                      {brands?.map((brand) => (
                         <SelectItem
                           key={brand.id}
                           value={brand.id}
@@ -159,25 +161,34 @@ export const ProductCreateModal = ({ open, onOpenChange }: Props) => {
                   <FormLabel>Series</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    value={field.value || ""}
+                    value={
+                      filteredSeries.length === 0
+                        ? undefined
+                        : field.value || ""
+                    }
+                    disabled={!selectedBrandId || filteredSeries.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a series" />
+                        {!selectedBrandId ? (
+                          <span className="text-muted-foreground">
+                            Select a brand first
+                          </span>
+                        ) : filteredSeries.length === 0 ? (
+                          <span className="text-muted-foreground">
+                            No series available
+                          </span>
+                        ) : (
+                          <SelectValue placeholder="Select a series" />
+                        )}
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {filteredSeries.length > 0 ? (
-                        filteredSeries?.map((series) => (
-                          <SelectItem key={series.id} value={series.id}>
-                            {series.name}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <p className="text-muted-foreground text-sm px-2 py-1">
-                          No series available
-                        </p>
-                      )}
+                      {filteredSeries.map((series) => (
+                        <SelectItem key={series.id} value={series.id}>
+                          {series.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormItem>
