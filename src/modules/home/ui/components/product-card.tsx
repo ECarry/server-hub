@@ -29,6 +29,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 import {
   Bookmark,
@@ -64,44 +65,40 @@ export function ProductCard({ product }: { product: Product }) {
   }, [api]);
 
   return (
-    <div className="group relative flex flex-col gap-y-4">
-      <div className="relative rounded-[24px] overflow-hidden w-full bg-foreground/3 hover:bg-foreground/6 transition-all duration-300 ease-out pt-6 pb-7 h-[280px] md:h-[320px]">
+    <div className="group space-y-4">
+      <div className="relative rounded-[24px] overflow-hidden w-full bg-foreground/3 hover:bg-foreground/6 transition-all duration-300 ease-out">
         <Carousel
           setApi={setApi}
-          className="m-0"
           opts={{
             align: "end",
             duration: 20,
           }}
         >
-          <CarouselContent className="m-0">
+          <CarouselContent>
             {product.images?.map((image, index) => (
-              <CarouselItem
-                key={index}
-                className="px-7 flex items-center justify-center"
-              >
-                <div className="relative h-[250px] md:h-[290px] w-full">
+              <CarouselItem key={index} className="px-10">
+                <AspectRatio ratio={1 / 1}>
                   <Image
                     src={keyToUrl(image.imageKey)}
                     alt="Product Image"
                     fill
-                    className="rounded-[20px] object-contain"
+                    className="object-contain"
                   />
-                </div>
+                </AspectRatio>
               </CarouselItem>
             ))}
           </CarouselContent>
           <CarouselPrevious
             variant="ghost"
             className={cn(
-              "invisible group-hover:visible ml-14 rounded-xl size-10 bg-background z-50",
+              "invisible group-hover:visible ml-14 rounded-full size-10 bg-background z-50",
               scrollPrev ? "" : "hidden"
             )}
           />
           <CarouselNext
             variant="ghost"
             className={cn(
-              "invisible group-hover:visible mr-14 rounded-xl size-10 bg-background z-50",
+              "invisible group-hover:visible mr-14 rounded-full size-10 bg-background z-50",
               scrollNext ? "" : "hidden"
             )}
           />
@@ -134,7 +131,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={keyToUrl(product.brandLogoKey ?? "")}
             alt="logo"
             fill
-            className="object-contain"
+            className="object-contain p-1"
           />
         </div>
 
