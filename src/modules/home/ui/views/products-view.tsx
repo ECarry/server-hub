@@ -5,6 +5,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ProductCard } from "../components/product-card";
 import { useHomeFilters } from "../../hooks/use-home-filters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 export const ProductsView = () => {
   const trpc = useTRPC();
@@ -41,7 +42,9 @@ export const ProductsViewLoading = () => {
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 content-start gap-x-5 gap-y-8 md:gap-x-6 md:gap-y-12">
       {Array.from({ length: 15 }).map((_, index) => (
         <div key={index} className="space-y-3">
-          <Skeleton className="h-[280px] md:h-[320px] w-full rounded-[24px]" />
+          <AspectRatio ratio={1 / 1}>
+            <Skeleton className="size-full rounded-[24px]" />
+          </AspectRatio>
           <div className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
             <div className="flex-1 space-y-2">
